@@ -1,5 +1,6 @@
 #include "quickMath.cpp"
 #include "parser.cpp"
+#include "static.cpp"
 #include <cstring>
 
 #define MultiplyR Multiply
@@ -85,6 +86,21 @@ public:
     }
 };
 
+extern int s_Variable;
+
+struct Entity
+{
+    static int x,y;
+
+    static void Print()
+    {
+        std::cout << x << ", " << y << std::endl;
+    }
+};
+
+int Entity::x;
+int Entity::y;
+
 int main()
 {
     // pointers
@@ -142,6 +158,23 @@ int main()
     log.Error("Hello Darknes!");
     log.Warn("Hello Darknes!");
     log.Info("Hello Darknes!");
+
+    // static outside the class means only for this translation
+    // unit "cpp" file if it's not including other cpp files basicly like private var
+    std::cout << "External static var:" << s_Variable << std::endl;
+
+    Entity e;
+    e.x = 2;
+    e.y = 3;
+
+    Entity e1;
+
+    Entity::x = 6;
+    Entity::y = 9;
+
+    e.Print();
+    Entity::Print();
+
     std::cout << "Hello world!" << std::endl;
     std::cin.get();
     std::cout << MultiplyR(2,2);
