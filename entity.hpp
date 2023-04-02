@@ -25,4 +25,10 @@ public:
     {
         std::cout << X << ", " << Y << std::endl;
     }
+
+    void Move(float xa, float ya)
+    {
+        X += xa;
+        Y += ya;
+    }
 };
