@@ -1,6 +1,7 @@
 #include "quickMath.cpp"
 #include "parser.cpp"
 #include "static.cpp"
+#include "entity.hpp"
 #include <cstring>
 
 #define MultiplyR Multiply
@@ -56,32 +57,36 @@ void Move(Player& player, int xa, int ya)
 class Log
 {
 public:
-    const int LogLevelError = 0;
-    const int LogLevelWarning = 1;
-    const int LogLevelInfo = 2;
+    enum Level
+    {
+        LevelError = 0, LevelWarining, LevelInfo
+    };
+    // const int LogLevelError = 0;
+    // const int LogLevelWarning = 1;
+    // const int LogLevelInfo = 2;
 private:
-    int m_LogLevel = LogLevelInfo;
+    Level m_LogLevel = LevelInfo;
 public:
-    void SetLevel(int level)
+    void SetLevel(Level level)
     {
         m_LogLevel = level;
     }
 
     void Error(const char* message)
     {
-        if (m_LogLevel >= LogLevelError)
+        if (m_LogLevel >= LevelError)
             std::cout << "[ERROR]: "<< message << std::endl;
     }
 
     void Warn(const char* message)
     {
-        if (m_LogLevel >= LogLevelWarning)
+        if (m_LogLevel >= LevelWarining)
             std::cout << "[WARNING]: "<< message << std::endl;
     }
 
     void Info(const char* message)
     {
-        if (m_LogLevel >= LogLevelInfo)
+        if (m_LogLevel >= LevelInfo)
             std::cout << "[INFO]: "<< message << std::endl;
     }
 };
@@ -154,7 +159,7 @@ int main()
     }
 
     Log log;
-    log.SetLevel(log.LogLevelWarning);
+    log.SetLevel(Log::LevelError);
     log.Error("Hello Darknes!");
     log.Warn("Hello Darknes!");
     log.Info("Hello Darknes!");
@@ -175,7 +180,11 @@ int main()
     e.Print();
     Entity::Print();
 
-    std::cout << "Hello world!" << std::endl;
+    EntityClass Ec;
+    std::cout << Ec.X << std::endl;
+    Ec.Print();
+
+    // std::cout << "Hello world!" << std::endl;
     std::cin.get();
     std::cout << MultiplyR(2,2);
     std::cout << Parser::parse();
