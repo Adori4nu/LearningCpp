@@ -1,5 +1,11 @@
+#pragma once
 #include <iostream>
 
+class EntityVirtual
+{
+public:
+    std::string GetName() { return "Entity"; };
+};
 class EntityClass
 {
 public:

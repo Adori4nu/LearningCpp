@@ -2,6 +2,7 @@
 #include "parser.cpp"
 #include "static.cpp"
 #include "entity.hpp"
+#include "player.hpp"
 #include <cstring>
 
 #define MultiplyR Multiply
@@ -106,6 +107,11 @@ struct Entity
 int Entity::x;
 int Entity::y;
 
+void PrintName (EntityVirtual* entity)
+{
+    std::cout << entity->GetName() << std::endl;
+}
+
 int main()
 {
     // pointers
@@ -183,6 +189,15 @@ int main()
     EntityClass Ec;
     std::cout << Ec.X << std::endl;
     Ec.Print();
+
+    EntityVirtual* ev = new EntityVirtual();
+    std::cout << ev->GetName() << std::endl;
+
+    PlayerVirtual* pv = new PlayerVirtual("Cherno");
+    std::cout << pv->GetName() << std::endl;
+
+    EntityVirtual* pev = new PlayerVirtual("AK");
+    std::cout << pev->GetName() << std::endl;
 
     // std::cout << "Hello world!" << std::endl;
     std::cin.get();
