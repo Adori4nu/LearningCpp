@@ -190,7 +190,9 @@ int main()
     std::cout << Ec.X << std::endl;
     Ec.Print();
 
-    EntityVirtual* ev = new EntityVirtual();
+    // Won't work because we have pure virtual function that is not implemented
+    // EntityVirtual* ev = new EntityVirtual();
+    EntityVirtual* ev = new PlayerVirtual("");
     std::cout << ev->GetName() << std::endl;
 
     PlayerVirtual* pv = new PlayerVirtual("Cherno");
@@ -198,6 +200,18 @@ int main()
 
     EntityVirtual* pev = new PlayerVirtual("AK");
     std::cout << pev->GetName() << std::endl;
+
+    int example[5];
+    int* ptrEx = example;
+    for (int i = 0; i < 5; i++)
+    {
+        example[i] = 2;
+    }
+    example[2] = 5;
+    *(ptrEx + 2) = 6;
+    *(int*)((char*)ptrEx + 8) = 69;
+    int* another = new int[5];
+    delete[] another;
 
     // std::cout << "Hello world!" << std::endl;
     std::cin.get();

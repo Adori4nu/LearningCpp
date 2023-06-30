@@ -4,7 +4,7 @@
 class EntityVirtual
 {
 public:
-    std::string GetName() { return "Entity"; };
+    virtual std::string GetName() = 0;
 };
 class EntityClass
 {
