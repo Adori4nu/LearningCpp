@@ -4,6 +4,7 @@
 #include "entity.hpp"
 #include "player.hpp"
 #include <cstring>
+#include "Vector.hpp"
 
 #define MultiplyR Multiply
 #define LOG(x) std::cout << x << std::endl
@@ -112,6 +113,16 @@ void PrintName (EntityVirtual* entity)
     std::cout << entity->GetName() << std::endl;
 }
 
+
+template<typename T>
+void PrintVector(const Vector<T>& vector)
+{
+    for (size_t i = 0; i < vector.Size(); i++)
+        std::cout << vector[i] << "\t";
+
+    std::cout << std::endl << "-----------------------------\n";
+}
+
 int main()
 {
     // pointers
@@ -217,4 +228,24 @@ int main()
     std::cin.get();
     std::cout << MultiplyR(2,2);
     std::cout << Parser::parse();
+
+    Vector<int> my_vec;
+    my_vec.EmplaceBack(1);
+    my_vec.EmplaceBack(2);
+    my_vec.EmplaceBack(3);
+
+    Vector<std::string> my_vec_of_strings;
+    my_vec_of_strings.EmplaceBack("KxZ");
+    my_vec_of_strings.EmplaceBack("KxZ");
+    my_vec_of_strings.EmplaceBack("AxZ");
+    
+    std::cin.get();
+
+    PrintVector(my_vec);
+    PrintVector(my_vec_of_strings);
+
+    for (Vector<int>::Iterator it = my_vec.begin(); it != my_vec.end(); it++)
+    {
+        std::cout << *it << std::endl;
+    }
 }

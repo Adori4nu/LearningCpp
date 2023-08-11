@@ -1,3 +1,4 @@
+#pragma once
 #define COMPILE_DEBUG_MODE 1
 #if COMPILE_DEBUG_MODE > 0
 #include <stdexcept>
