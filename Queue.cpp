@@ -2,8 +2,8 @@ template <typename Type>
 class Node
 {
 public:
-    Node() : m_next(this), m_prev(this) {}
-    Node(const Type& value) : m_next(this), m_prev(this), m_value(value) {}
+    Node() : m_next(this), m_prev(this) {};
+    Node(const Type& value) : m_next(this), m_prev(this), m_value(value) {};
     Node* m_next;
     Node* m_prev;
     Type m_value;
