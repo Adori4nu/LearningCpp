@@ -2,6 +2,7 @@
 #include <iostream>
 #include <thread>
 #include "common.hpp"
+#include "parallel_accumulate_example.hpp"
 
 void foo()
 {
@@ -54,4 +55,6 @@ int main()
     // run();
 
     std::cout << std::thread::hardware_concurrency();
+
+    run_p_acc();
 }
