@@ -17,7 +17,7 @@ void throwing_fun()
 void run()
 {
     std::thread foo_thread(foo);
-    thread_guard tg(foo_thread);
+    // thread_guard tg(foo_thread); // comented after change in common.hpp with joinability
     try {
         throwing_fun();
         foo_thread.join();
@@ -51,5 +51,7 @@ int main()
 
     std::cout << "Hello world! from main. Thread id: " << std::this_thread::get_id() << std::endl;
 
-    run();
+    // run();
+
+    std::cout << std::thread::hardware_concurrency();
 }

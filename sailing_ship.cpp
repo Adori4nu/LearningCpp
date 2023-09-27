@@ -135,7 +135,6 @@ int main()
     auto captain = std::make_unique<Captain>();
 
     bool bIsSailing = true;
-    std::cout << "Helo" << std::endl;
 
     captain->list_the_comands();
 
