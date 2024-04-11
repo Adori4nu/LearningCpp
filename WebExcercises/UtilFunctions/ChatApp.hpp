@@ -1,5 +1,6 @@
 #pragma once
 #include <algorithm>
+#include <array>
 #include <cctype>
 #include <functional>
 #include <iostream>
@@ -9,12 +10,14 @@
 #include <winsock2.h>
 #include <WS2tcpip.h>
 
+constexpr int MAX_CONNECTED_CLIENT_COUNT = 12;
+
 enum AppType : int
 {
 	SERVER,
 	SERVER_HEADLESS,
 	CLIENT
-}; //1:08:07
+}; //1:20:13
 
 struct AcceptedSocket
 {
@@ -26,29 +29,38 @@ struct AcceptedSocket
 
 class ChatApp
 {
+	std::array<AcceptedSocket, 12> acceptedSockets;
+	size_t acceptedSocketsCout{ 0 };
 	SOCKET m_socketFD{ INVALID_SOCKET };
 	SOCKET m_acceptClientSocketFD{ INVALID_SOCKET };
 	sockaddr_in m_addressForASocket;
 	AppType m_appMode;
 	std::vector<char> m_messageBuffer;
-	std::vector<char> m_reciveBuffer;
 	std::vector<char> m_responseBuffer;
 	static const std::string m_exit;
 	std::function<int()> m_run;
-	AcceptedSocket& m_acceptIncomingConnection(SOCKET serverSocketFD);
-	int m_startAcceptingIncomingConnection(SOCKET serverSocketFD);
-	//bool m_acceptIncomingConnectionAndPrintRecivedData(SOCKET serverSocketFD);
-	bool m_receiveAndPrintDataThread(AcceptedSocket& clientSocketData);
+	std::vector<char> m_username;
+	int sendData();
+	bool receiveData(SOCKET socketFD);
+	AcceptedSocket& acceptIncomingConnection(SOCKET serverSocketFD);
+	int startAcceptingIncomingConnection(SOCKET serverSocketFD);
+	bool receiveAndPrintDataThread(AcceptedSocket& clientSocketData);
+	void sendReceivedMessageToTheOtherClients(const std::vector<char>& buffer, SOCKET socketFD);
+	bool startListeningAndPrintMessagesOnNewThread(SOCKET socketFD);
+	bool clientListenAndPrint(SOCKET socketFD);
+
 public:
 	ChatApp() = default;
 	~ChatApp()
 	{
 	}
 
+	WSADATA wsaData;
+	int wsaErr;
+	WORD w_VersionRequested{ MAKEWORD(2, 2) };
+
 	bool init();
 	bool deinit();
-	int sendData();
-	bool receiveData(SOCKET socketFD);
 	int run();
 
 	SOCKET createTCPIPv4Socket() { return socket(AF_INET, SOCK_STREAM, IPPROTO_TCP); }
@@ -72,6 +84,19 @@ inline const std::string ChatApp::m_exit{ "exit" };
 
 inline bool ChatApp::init()
 {
+	
+	wsaErr = WSAStartup(w_VersionRequested, &wsaData);
+	if (wsaErr != 0)
+	{
+		std::cout << "Owned by Skill Issue! The Winsock dll not found!" << std::endl;
+		return false;
+	}
+	else
+	{
+		std::cout << "The Winsock dll found!" << std::endl;
+		std::cout << "The status: " << wsaData.szSystemStatus << std::endl;
+	}
+
 	int response{ -1 };
 	while (response != 0 && response != 1 && response != 2)
 	{
@@ -104,8 +129,8 @@ inline bool ChatApp::init()
 	}
 
 	m_messageBuffer.resize(4096);
-	m_reciveBuffer.resize(4096);
 	m_responseBuffer.resize(32);
+	m_username.resize(128);
 
 	return true;
 }
@@ -136,14 +161,17 @@ inline bool ChatApp::deinit()
 		}
 		closesocket(m_socketFD);
 	}
+	std::cin.get();
+	WSACleanup();
 	return true;
 }
 
 inline int ChatApp::sendData()
 {
+	std::vector<char> messageWithUserDataBuffer(4096 + 128);
 	while (true)
 	{
-		std::cout << "Please enter a message to send to the Server or type \"exit\" to close the app:" << std::endl;
+		std::cout << "Please enter a message or type \"exit\" to close the app:" << std::endl;
 		std::cin.getline(m_messageBuffer.data(), m_messageBuffer.size());
 		
 		if (auto result{ m_exit.compare(m_messageBuffer.data()) }; result == 0)
@@ -151,14 +179,42 @@ inline int ChatApp::sendData()
 			std::cout << "Data equals \"exit\"" << std::endl;
 			return 0;
 		}
+		/*std::shift_right(m_messageBuffer.begin(), m_messageBuffer.end(), 128);
+		m_username.at(127) = 0;
+		std::copy(m_username.begin(), m_username.end(), m_messageBuffer.begin());*/
 
-		if (auto byteCount{ send(m_socketFD, m_messageBuffer.data(), m_messageBuffer.size(), 0) }; byteCount > 0)
+		auto it = std::ranges::find_if(m_username, [](char c) { return c == '\0'; });
+		if (it != m_username.end())
 		{
-			std::cout << "\n\nMessage sent: " << std::endl << m_messageBuffer.data() << std::endl;
+			*it = ' ';
+			++it;
+		}
+		if (it != m_username.end())
+		{
+			*it = ':';
+			++it;
+		}
+		if (it != m_username.end())
+		{
+			*it = ' ';
+			++it;
+		}
+		if (it != m_username.end())
+		{
+			*it = '\0';
+		}
+		messageWithUserDataBuffer.assign(m_username.begin(), it);
+		//--it;
+		auto itDif = std::distance(m_username.begin(), it);
+		auto it_2 = messageWithUserDataBuffer.begin() + itDif;
+		messageWithUserDataBuffer.insert(it_2, m_messageBuffer.begin(), m_messageBuffer.end());
+		if (auto byteCount{ send(m_socketFD, messageWithUserDataBuffer.data(), messageWithUserDataBuffer.size(), 0) }; byteCount > 0)
+		{
+			std::cout << "Message sent: " << std::endl << messageWithUserDataBuffer.data() << std::endl;
 		}
 		else
 		{
-			std::cout << "Owned by Skill Issue! only " << byteCount << " bytes send out off " << m_messageBuffer.size() << " from your message." << std::endl;
+			std::cout << "Owned by Skill Issue! only " << byteCount << " bytes send out off " << messageWithUserDataBuffer.size() << " from your message." << std::endl;
 			WSACleanup();
 		}
 	}
@@ -166,11 +222,13 @@ inline int ChatApp::sendData()
 
 inline bool ChatApp::receiveData(SOCKET socketFD)
 {
+	std::vector<char> reciveBuffer(4096 + 128);
+
 	int byteCount;
 	do
 	{
 		//byteCount = recv(m_acceptClientSocketFD, m_reciveBuffer.data(), m_reciveBuffer.size(), 0);
-		byteCount = recv(socketFD, m_reciveBuffer.data(), m_reciveBuffer.size(), 0);
+		byteCount = recv(socketFD, reciveBuffer.data(), reciveBuffer.size(), 0);
 		if (byteCount == 0)
 		{
 			std::cout << "Connection closed!" << std::endl;
@@ -178,29 +236,18 @@ inline bool ChatApp::receiveData(SOCKET socketFD)
 		}
 		else if (byteCount > 0)
 		{
-			std::cout << "Message received: " << m_reciveBuffer.data() << std::endl;
+			std::cout << "Message received: " << reciveBuffer.data() << std::endl;
+			sendReceivedMessageToTheOtherClients(reciveBuffer, socketFD);
 		}
 		else
 		{
-			std::cout << "Error: Only " << byteCount << " bytes received out off " << m_reciveBuffer.size() << " from your message." << std::endl;
+			std::cout << "Error: Only " << byteCount << " bytes received out off " << reciveBuffer.size() << " from your message." << std::endl;
 			WSACleanup();
 			return false;
 		}
 	} while (byteCount > 0);
 
 	std::cout << "Stoped receiving data!" << std::endl;
-	// closing socket
-	if (m_appMode == SERVER || m_appMode == SERVER_HEADLESS)
-	{
-		if (auto result{ shutdown(socketFD, SD_SEND) }; result == SOCKET_ERROR)
-		{
-			std::cout << "Shutdown failed: " << WSAGetLastError() << std::endl;
-			closesocket(socketFD);
-			WSACleanup();
-			return false;
-		}
-		closesocket(socketFD);
-	}
 	return true;
 }
 
@@ -237,7 +284,7 @@ inline int ChatApp::run()
 		}
 		//listen
 		// second parameter is max number of clients that can be connected to specific socket
-		if (listen(m_socketFD, 12) == SOCKET_ERROR)
+		if (listen(m_socketFD, MAX_CONNECTED_CLIENT_COUNT) == SOCKET_ERROR)
 		{
 			std::cout << "Owned by Skill Issue! listen(): Error listening on socket: " << WSAGetLastError() << std::endl;
 		}
@@ -257,7 +304,7 @@ inline int ChatApp::run()
 		//}
 		//std::cout << "Accepted connection!" << std::endl;
 		// this is no longer working
-		m_run = std::bind(&ChatApp::m_startAcceptingIncomingConnection, this, m_socketFD);
+		m_run = std::bind(&ChatApp::startAcceptingIncomingConnection, this, m_socketFD);
 		// it should be here? 
 		//closesocket(m_socketFD);
 		break;
@@ -279,15 +326,19 @@ inline int ChatApp::run()
 			std::cout << "Client: Can start sending and receiving data..." << std::endl;
 			m_run = std::bind(&ChatApp::sendData, this);
 		}
+		std::cout << "Pick Username max length 128 characters: ";
+		std::cin.getline(m_username.data(), m_username.size());
 		break;
 		//send
 		//recv
 	}
 	}
+	if (m_appMode == CLIENT)
+		startListeningAndPrintMessagesOnNewThread(m_socketFD);
 	m_run();
 }
 
-inline AcceptedSocket& ChatApp::m_acceptIncomingConnection(SOCKET serverSocketFD)
+inline AcceptedSocket& ChatApp::acceptIncomingConnection(SOCKET serverSocketFD)
 {
 	sockaddr clientAddress;
 	int clientAddressSize{ sizeof(sockaddr) };
@@ -310,31 +361,78 @@ inline AcceptedSocket& ChatApp::m_acceptIncomingConnection(SOCKET serverSocketFD
 	return *acceptedSocket;
 }
 
-inline int ChatApp::m_startAcceptingIncomingConnection(SOCKET serverSocketFD)
+inline int ChatApp::startAcceptingIncomingConnection(SOCKET serverSocketFD)
 {
-	while (true)
+	while (acceptedSocketsCout < MAX_CONNECTED_CLIENT_COUNT)
 	{
-		AcceptedSocket clientSocketFD = m_acceptIncomingConnection(m_socketFD);
-		m_receiveAndPrintDataThread(clientSocketFD);
+		AcceptedSocket clientSocketFD = acceptIncomingConnection(m_socketFD);
+		acceptedSockets.at(acceptedSocketsCout++) = clientSocketFD;
+		receiveAndPrintDataThread(clientSocketFD);
 	}
 	return 1;
-	//std::thread connectionAcceptingThread(&m_acceptIncomingConnectionAndPrintRecivedData, serverSocketFD);
-	//return 1;
 }
 
-//inline bool ChatApp::m_acceptIncomingConnectionAndPrintRecivedData(SOCKET serverSocketFD)
-//{
-//	return true;
-//}
-
-inline bool ChatApp::m_receiveAndPrintDataThread(AcceptedSocket& clientSocketData)
+inline bool ChatApp::receiveAndPrintDataThread(AcceptedSocket& clientSocketData)
 {
 	//std::thread receivingThreadForOneClient(receiveData, clientSocketData.acceptedSocketFD);
 	std::thread receivingThreadForOneClient([this, &clientSocketData]() {
 		this->receiveData(clientSocketData.acceptedSocketFD);
 	});
-	//receiveData(clientSocketData.acceptedSocketFD);
-	if (receivingThreadForOneClient.joinable())
-		receivingThreadForOneClient.join();
+	//if (receivingThreadForOneClient.joinable())
+		//receivingThreadForOneClient.join();
+	receivingThreadForOneClient.detach();
+	return true;
+}
+
+inline void ChatApp::sendReceivedMessageToTheOtherClients(const std::vector<char>& buffer, SOCKET socketFD)
+{
+	for (size_t i{ 0 }; i < acceptedSocketsCout; ++i)
+	{
+		if (acceptedSockets.at(i).acceptedSocketFD != socketFD)
+		{
+			if (auto byteCount{ send(acceptedSockets.at(i).acceptedSocketFD, buffer.data(), buffer.size(), 0) }; byteCount > 0)
+			{
+				std::cout << "Message broadcasted." << std::endl;
+			}
+		}
+	}
+}
+
+inline bool ChatApp::startListeningAndPrintMessagesOnNewThread(SOCKET socketFD)
+{
+	std::thread receiveAndPrintClientThread([this, &socketFD]() {
+		this->clientListenAndPrint(socketFD);
+	});
+	receiveAndPrintClientThread.detach();
+	return true;
+}
+
+inline bool ChatApp::clientListenAndPrint(SOCKET socketFD)
+{
+	std::vector<char> reciveBuffer(4096 + 128);
+
+	int byteCount;
+	do
+	{
+		//byteCount = recv(m_acceptClientSocketFD, m_reciveBuffer.data(), m_reciveBuffer.size(), 0);
+		byteCount = recv(socketFD, reciveBuffer.data(), reciveBuffer.size(), 0);
+		if (byteCount == 0)
+		{
+			std::cout << "Connection closed!" << std::endl;
+			break;
+		}
+		else if (byteCount > 0)
+		{
+			std::cout << reciveBuffer.data() << std::endl;
+		}
+		else
+		{
+			std::cout << "Error: Only " << byteCount << " bytes received out off " << reciveBuffer.size() << " from your message." << std::endl;
+			WSACleanup();
+			return false;
+		}
+	} while (byteCount > 0);
+
+	std::cout << "Stoped receiving data!" << std::endl;
 	return true;
 }

@@ -11,38 +11,22 @@
 
 int main(int argc, char* argv[])
 {
-	WSADATA wsaData;
-	int wsaErr;
-	WORD w_VersionRequested{ MAKEWORD(2, 2) };
-	wsaErr = WSAStartup(w_VersionRequested, &wsaData);
-	if (wsaErr != 0)
+	ChatApp ChatClient;
+
+	if (auto result{ ChatClient.init() }; !result)
 	{
-		std::cout << "Owned by Skill Issue! The Winsock dll not found!" << std::endl;
+		std::cout << "Owned by Skill Issue! Can't init ChatApp." << std::endl;
 		return 0;
 	}
 	else
 	{
-		std::cout << "The Winsock dll found!" << std::endl;
-		std::cout << "The status: " << wsaData.szSystemStatus << std::endl;
+		std::cout << "Init Succesfull" << std::endl;
 	}
 
-	{
-		ChatApp ChatClient;
+	ChatClient.run();
+	ChatClient.deinit();
 
-		if (auto result{ ChatClient.init() }; !result)
-		{
-			std::cout << "Owned by Skill Issue! Can't init ChatApp." << std::endl;
-			return 0;
-		}
-		else
-		{
-			std::cout << "Init Succesfull" << std::endl;
-		}
-
-		ChatClient.run();
-		ChatClient.deinit();
-	}
-
+#pragma region old_junk
 	//SOCKET clientSocketFDOfServer = INVALID_SOCKET;
 	//clientSocketFDOfServer = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	//if (clientSocketFDOfServer == INVALID_SOCKET)
@@ -124,8 +108,7 @@ int main(int argc, char* argv[])
 	//	std::cout << "Owned by Skill Issue! only " << byteCount << " bytes received out off " << buffer.size() << " from your message." << std::endl;
 	//	WSACleanup();
 	//}
+#pragma endregion
 	
-	std::cin.get();
-	WSACleanup();
 	return 0;
 }
