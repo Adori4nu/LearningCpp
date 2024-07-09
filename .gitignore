@@ -34,3 +34,9 @@
 # VS Code configs
 settings.json
 tasks.json
+Debug
+.vs
+*.vcxproj
+*.vcxproj.user
+*.pdb
+*.ilk
