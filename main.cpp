@@ -5,6 +5,7 @@
 #include "player.hpp"
 #include <cstring>
 #include "Vector.hpp"
+#include "Stack.hpp"
 
 #define MultiplyR Multiply
 #define LOG(x) std::cout << x << std::endl
@@ -248,4 +249,14 @@ int main()
     {
         std::cout << *it << std::endl;
     }
+
+    Stack<int> my_stk;
+    my_stk.push(5);
+
+    std::cout << "My stack peek: " << my_stk.peek() << std::endl;
+    my_stk.push(42);
+    my_stk.push(69);
+    std::cout << "My stack peek: " << my_stk.peek() << std::endl;
+    std::cout << "My stack pop: " << my_stk.pop() << std::endl;
+    std::cout << "My stack peek: " << my_stk.peek() << std::endl;
 }
