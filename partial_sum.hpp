@@ -81,6 +81,7 @@ void parallel_partial_sum(Iterator first, Iterator last)
     uint64_t const max_threads{ (length + min_per_thread - 1) / min_per_thread };
     uint64_t const hardware_threads = std::thread::hardware_concurrency();
     uint64_t const num_threads{ std::min(hardware_threads != 0 ? hardware_threads : 2, max_threads) };
+    uint64_t const block_size{ length / num_threads };
 
 
     std::vector<std::thread> threads(num_threads - 1);
