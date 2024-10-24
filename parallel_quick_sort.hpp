@@ -63,7 +63,7 @@ std::list<T> parallel_quick_sort(std::list<T> input)
 
     auto new_lower(sequential_quick_sort(std::move(lower_list)));
     std::future<std::list<T>> new_upper_future
-    (std::async(&parallel_quick_sort<T>, std::move(input)));
+        (std::async(&parallel_quick_sort<T>, std::move(input)));
 
     //arrange the result list
     result.splice(result.begin(), new_lower);
