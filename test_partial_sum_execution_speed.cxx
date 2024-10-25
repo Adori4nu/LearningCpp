@@ -8,7 +8,7 @@
 #include <vector>
 
 #include "partial_sum.hpp"
-#include "utils.hpp"
+// #include "utils.hpp"
 
 const size_t testSize{ 10'000'000 };
 
@@ -17,6 +17,15 @@ using std::chrono::duration_cast;
 using std::chrono::high_resolution_clock;
 using std::milli;
 
+void print_results(const char* const tag
+    , high_resolution_clock::time_point startTime
+    , high_resolution_clock::time_point endTime
+)
+{
+    std::chrono::duration<double, std::milli> duration{endTime - startTime};
+    
+    std::cout << tag << ": Time: " << duration.count() << "ms" << std::endl;
+}
 
 int main()
 {
@@ -35,7 +44,10 @@ int main()
     print_results("parallel scan", startTime, endTime);
 
     startTime = high_resolution_clock::now();
-    parallel_partial_sum(ints.cbegin(), ints.cend());
+    parallel_partial_sum(ints.begin(), ints.end());
     endTime = high_resolution_clock::now();
     print_results("parallel scan manual", startTime, endTime);
+
+    std::cin.get();
+    return 0;
 }
