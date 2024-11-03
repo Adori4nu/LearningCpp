@@ -22,7 +22,20 @@ public:
         cv.notify_one();
     }
 
-    bool pop(T& ref);
+    bool pop(T& ref)
+    {
+        std::lock_guard<std::mutex> lg(m);
+        if (queue.empty())
+        {
+            return false;
+        }
+        else
+        {
+            ref = queue.front();
+            queue.pop();
+            return true;
+        }
+    }
 
     std::shared_ptr<T> pop()
     {
@@ -39,7 +52,17 @@ public:
         }
     }
 
-    bool wait_pop(T& ref);
+    bool wait_pop(T& ref)
+    {
+        std::unique_lock<std::mutex> lg(m);
+        cv.wait(lg, [this]{
+            return !queue.empty();
+        });
+
+        ref = *(queue.front().get());
+        queue.pop();
+        return true;
+    }
 
     std::shared_ptr<T> wait_pop()
     {
