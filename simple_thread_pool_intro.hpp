@@ -1,3 +1,4 @@
+#pragma once
 #include <atomic>
 #include <cstdint>
 #include <functional>
@@ -8,7 +9,7 @@
 // #include "common.hpp"
 #include "common_objs.hpp"
 
-#include "thread_safe_queue.hpp"
+#include "thread_safe_queue_wp.hpp"
 
 #pragma region simple thread pool implementation
 class thread_pool
@@ -23,8 +24,8 @@ class thread_pool
         while (!done)
         {
             std::function<void()> task;
-            // if (work_queue.try_pop(task))
-            if (work_queue.wait_pop(task))
+            if (work_queue.try_pop(task))
+            // if (work_queue.wait_pop(task))
             {
                 task();
             }
