@@ -14,7 +14,7 @@
 #include "thread_safe_queue_wp.hpp"
 
 #pragma region waiting thread pool implementation
-class thread_pool_waiting
+class thread_pool_waiting_other_tasks
 {
     std::atomic_bool done;
     thread_safe_queue<function_wrapper> work_queue;
@@ -25,27 +25,19 @@ class thread_pool_waiting
     {
         while (!done)
         {
-            function_wrapper task;
-            if (work_queue.try_pop(task))
-            {
-                task();
-            }
-            else
-            {
-                std::this_thread::yield();
-            }
+            run_penging_task();
         }
     }
     
 public:
-    thread_pool_waiting() : done(false), joiner(threads)
+    thread_pool_waiting_other_tasks() : done(false), joiner(threads)
     {    
         uint64_t const thread_count{ std::thread::hardware_concurrency() };
         try
         {
             for (size_t i{ 0 }; i < thread_count; ++i)
             {
-                threads.push_back(std::thread(&thread_pool_waiting::worker_thread, this));
+                threads.push_back(std::thread(&thread_pool_waiting_other_tasks::worker_thread, this));
             }    
         }
         catch(...)
@@ -55,7 +47,7 @@ public:
         }
     }
 
-    ~thread_pool_waiting()
+    ~thread_pool_waiting_other_tasks()
     {
         done = true;
     }
@@ -68,6 +60,19 @@ public:
         std::future<result_type> res(task.get_future());
         work_queue.push(std::move(task));
         return res;
+    }
+
+    void run_penging_task()
+    {
+        function_wrapper task;
+        if (work_queue.try_pop(task))
+        {
+            task();
+        }
+        else
+        {
+            std::this_thread::yield();
+        }
     }
 };
 #pragma endregion
