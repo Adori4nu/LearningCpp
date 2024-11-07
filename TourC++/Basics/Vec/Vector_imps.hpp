@@ -37,7 +37,7 @@ void read_and_sum(T& result, size_t s)
 #if VEC_IMP == 23
 #pragma region 2_3_Vec
 #include <iostream>
-// export module Vector;
+// export module Vector; // this won't work it needs to be on the top of C++ file
 
 template<typename T>
 /*export*/ class Vector{
