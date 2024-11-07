@@ -19,7 +19,7 @@ T sum(const std::vector<T>& data)
 template<typename T>
 constexpr T square(T x) // funkcja możliwa do użycia wyłącznie w wyrażeniu stałym obliczanym w czasie kompilacj
 {                               // funkcji constrexpr można używać wywołując ją z argumentami które nie są stałe
-    return x * x;               // wuwczas funkcja nie jest wyrażeniem stałym ale funkcją runtime
+    return x * x;               // wówczas funkcja nie jest wyrażeniem stałym ale funkcją runtime
 }
 
 template<typename T>
