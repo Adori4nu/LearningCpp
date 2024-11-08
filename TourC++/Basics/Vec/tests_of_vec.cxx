@@ -22,7 +22,9 @@ int main()
 
     std::cout << "Podrozdział 3" << std::endl;
     read_and_sum(sum_of_vec, 3);
+    std::cout << "Sum of input: " << sum_of_vec << std::endl;
     
 #endif
+    std::cin.get();
     std::cin.get();
 }
