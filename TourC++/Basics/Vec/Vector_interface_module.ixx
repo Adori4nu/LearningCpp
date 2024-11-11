@@ -105,8 +105,8 @@ bool operator==(const Vector<T>& v1, const Vector<T>& v2)
 #pragma region 4_5_Vec
 
 enum class Error_action { ignore, throwing, terminating, logging };
-
-constexpr Error_action default_Error_action = Error_action::throwing;
+// throwing is crashing even with try catch in read and sum for msvc, g++ is fine
+constexpr Error_action default_Error_action = Error_action::logging;
 
 enum class Error_code { range_error, length_error };
 
@@ -155,7 +155,17 @@ void read_and_sum(T& result, size_t s)
 {
     Vector<T> v(s);
     for (size_t i{0}; i != s; ++i)
-        std::cin >> v[i];
+    {   // try catch needed for msvc to work
+        try
+        {
+            std::cin >> v[i];
+        }
+        catch(const std::exception& e)
+        {
+            std::cerr << e.what() << '\n';
+        }
+        
+    }
     
     result = {};
     for (size_t i{0}; i != s; ++i)
