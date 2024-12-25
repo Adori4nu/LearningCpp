@@ -21,6 +21,18 @@ class LinkedList{
 public:
     LinkedList<Type>() : m_head{nullptr}, m_tail{nullptr}, m_size{0} {}
     LinkedList(Type value) : m_head{new Node(value)}, m_tail{m_head}, m_size{1} {}
+
+    ~LinkedList()
+    {
+        Node* current{ m_head };
+        while (m_head) {
+            m_head = m_head->next;
+            delete current;
+            current = m_head;
+        }
+    }
+
+    void append(Type value);
     
     friend std::ostream& operator<<(std::ostream& os, const LinkedList<Type>& list)
     {
@@ -47,3 +59,18 @@ public:
 export template<typename Type>
 LinkedList(Type) -> LinkedList<Type>; // deduction guide probably not needed in c++23 with my usage scenarios
 
+export template<typename Type>
+void LinkedList<Type>::append(Type value)
+{
+    Node* temp{ new Node{value} };
+    if (m_size == 0)
+    {
+        m_head = m_tail = temp;
+    } 
+    else
+    {
+        m_tail->next = temp;
+        m_tail = temp;
+    }
+    ++m_size;
+}
