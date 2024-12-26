@@ -60,6 +60,7 @@ public:
     };
 
     typename LinkedList<Type>::Node* get(size_t index);
+    bool set(int index, int value);
     Type& getHead() { return m_head->value; }
     const Type& getHead() const { return m_head->value; }
     Type& getTail() { return m_tail->value; }
@@ -147,4 +148,15 @@ typename LinkedList<Type>::Node* LinkedList<Type>::get(size_t index)
         --index;
     }
     return temp;
+}
+
+export template <typename Type>
+bool LinkedList<Type>::set(int index, int value)
+{
+    Node* temp{ get(index) };
+    if (temp) {
+        temp->value = value;
+        return true;
+    }
+    return false;
 }

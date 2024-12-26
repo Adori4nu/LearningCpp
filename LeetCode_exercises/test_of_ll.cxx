@@ -68,6 +68,7 @@ auto main() -> int
         std::cout << *res << "\n";
     else
         std::cout << "Nullptr\n";
+    empty_ll.set(3, 696'696);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
     empty_ll.deleteFirst();
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
