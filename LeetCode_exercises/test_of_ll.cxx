@@ -24,8 +24,63 @@ auto main() -> int
     empty_ll.append(6);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
     empty_ll.append(9);
-    std::cout << "Content of empty_ll: " << empty_ll << std::endl;
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.removeLast();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.removeLast();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.removeLast();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.removeLast();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.removeLast();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.prepend(69);
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.prepend(42);
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.prepend(6);
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.prepend(9);
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
 
+    std::cout << "Content of empty_ll at index[-1]: ";
+    if (auto res{empty_ll.get(-1)})
+        std::cout << *res << "\n";
+    else
+        std::cout << "Nullptr\n";
+    std::cout << "Content of empty_ll at index[0]: " << empty_ll.get(0) << "\n";
+    std::cout << "Content of empty_ll at index[0]: ";
+    if (auto res{empty_ll.get(0)})
+        std::cout << *res << "\n";
+    else
+        std::cout << "Nullptr\n";
+    std::cout << "Content of empty_ll at index[1]: " << empty_ll.get(1) << "\n";
+    std::cout << "Content of empty_ll at index[2]: " << empty_ll.get(2)->value << "\n";
+    std::cout << "Content of empty_ll at index[3]: " << empty_ll.get(3) << "\n";
+    std::cout << "Content of empty_ll at index[3]: ";
+    if (auto res{empty_ll.get(3)})
+        std::cout << *res << "\n";
+    else
+        std::cout << "Nullptr\n";
+    std::cout << "Content of empty_ll at index[4]: ";
+    if (auto res{empty_ll.get(4)})
+        std::cout << *res << "\n";
+    else
+        std::cout << "Nullptr\n";
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.deleteFirst();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.deleteFirst();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.deleteFirst();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.deleteFirst();
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.deleteFirst();
+    std::cout << "Content of empty_ll: " << empty_ll << std::endl;
+    
+    
     std::cin.get();
     std::cin.get();
 }
