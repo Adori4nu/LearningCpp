@@ -40,9 +40,12 @@ public:
     }
 
     auto append(Type value) -> void;
-    auto removeLast() -> void;
+    auto deleteLast() -> void;
     auto prepend(Type value) -> void;
     auto deleteFirst() -> void;
+    auto insert(size_t index, Type value) -> bool;
+    auto deleteNode(size_t index) -> void;
+    auto reverse() -> void;
     
     friend std::ostream& operator<<(std::ostream& os, const LinkedList<Type>& list)
     {
@@ -60,12 +63,13 @@ public:
     };
 
     typename LinkedList<Type>::Node* get(size_t index);
-    bool set(int index, int value);
     Type& getHead() { return m_head->value; }
     const Type& getHead() const { return m_head->value; }
     Type& getTail() { return m_tail->value; }
     const Type& getTail() const { return m_tail->value; }
     size_t getLenght() const { return m_size; }
+    
+    bool set(int index, int value);
 };
 
 export template <typename Type>
@@ -88,7 +92,7 @@ auto LinkedList<Type>::append(Type value) -> void
 }
 
 export template <typename Type>
-auto LinkedList<Type>::removeLast() -> void
+auto LinkedList<Type>::deleteLast() -> void
 {
     if (m_size == 0) return;
     Node* current{ m_head };
@@ -135,6 +139,58 @@ auto LinkedList<Type>::deleteFirst() -> void
     }
     delete temp;
     --m_size;
+}
+
+export template <typename Type>
+auto LinkedList<Type>::insert(size_t index, Type value) -> bool
+{
+    if (index < 0 || index > m_size) return false;
+    if (index == 0) {
+        prepend(value);
+        return true;
+    }
+    if (index == m_size) {
+        append(value);
+        return true;
+    }
+    Node* new_node{ new Node{ value } };
+    Node* temp{ get(index - 1) };
+    new_node->next = temp->next;
+    temp->next = new_node;
+    ++m_size;
+    return true;
+}
+
+export template <typename Type>
+auto LinkedList<Type>::deleteNode(size_t index) -> void
+{
+    if (index < 0 || index >= m_size) return; 
+    if (index == 0) return deleteFirst();
+    if (index == m_size - 1) return deleteLast();
+
+    Node* slow{ get(index - 1) };
+    Node* temp{ slow->next };
+
+    slow->next = temp->next;
+    delete temp;
+    --m_size;
+}
+
+export template <typename Type>
+auto LinkedList<Type>::reverse() -> void
+{
+    if (m_size == 0 || m_size == 1) return;
+    Node* temp{ m_head };
+    m_head = m_tail;
+    m_tail = temp;
+    Node* slow{ nullptr };
+    Node* fast{ temp->next };
+    for (size_t i{ 0 }; i < m_size; ++i) {
+        fast = temp->next;
+        temp->next = slow;
+        slow = temp;
+        temp = fast;
+    }
 }
 
 export template <typename Type>

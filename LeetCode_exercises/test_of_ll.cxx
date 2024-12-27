@@ -7,6 +7,8 @@ auto main() -> int
     std::cout << "LeetCode exercises:\n--- test of LL ---\n1. Constructor" << std::endl;
     LinkedList<int> empty_ll{};
     LinkedList int_ll{42};
+    int_ll.append(9);
+    int_ll.insert(1, 6);
     
     std::cout << "Both Linked Lists crated!!!\n";
     std::cout << "Empty LL size: " << sizeof(empty_ll) << "\n";
@@ -25,15 +27,15 @@ auto main() -> int
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
     empty_ll.append(9);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
-    empty_ll.removeLast();
+    empty_ll.deleteNode(2);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
-    empty_ll.removeLast();
+    empty_ll.deleteNode(2);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
-    empty_ll.removeLast();
+    empty_ll.deleteNode(0);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
-    empty_ll.removeLast();
+    empty_ll.deleteLast();
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
-    empty_ll.removeLast();
+    empty_ll.deleteLast();
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
     empty_ll.prepend(69);
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
@@ -69,6 +71,8 @@ auto main() -> int
     else
         std::cout << "Nullptr\n";
     empty_ll.set(3, 696'696);
+    std::cout << "Content of empty_ll: " << empty_ll << "\n";
+    empty_ll.reverse();
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
     empty_ll.deleteFirst();
     std::cout << "Content of empty_ll: " << empty_ll << "\n";
