@@ -1,5 +1,8 @@
 module;
-
+// #define USE_SET_IMPL
+#ifdef USE_SET_IMPL
+#include <unordered_set>
+#endif
 #include <iostream>
 
 export module LinkedList;
@@ -51,6 +54,7 @@ public:
     auto hasLoop() -> bool;
     auto findKthFromEnd(int k) -> Node*;
     auto partitionList(Type value) -> void;
+    auto removeDuplicates() -> void;
     
     friend std::ostream& operator<<(std::ostream& os, const LinkedList<Type>& list)
     {
@@ -263,6 +267,47 @@ auto LinkedList<Type>::partitionList(Type value) -> void {
     m_tail = more_tail;
     delete less;
     delete more_and_equal;
+}
+
+template <typename Type>
+auto LinkedList<Type>::removeDuplicates() -> void
+{
+#ifndef USE_SET_IMPL
+    if (!m_head || !m_head->next) return;
+    Node* current{ m_head };
+    while(current) {
+        Node* prev{ current };
+        Node* runner{ current->next };
+        while (runner) {
+            if (runner->value == current->value) {
+                prev->next = runner->next;
+                delete runner;
+                runner = prev->next;
+                --m_size;
+            } else {
+                prev = runner;
+                runner = runner->next;
+            }
+        }
+        current = current->next;
+    }
+#else
+    std::unordered_set<Type> values;
+    Node* prev{ nullptr };
+    Node* current{ m_head };
+    while (current) {
+        if (values.find(current->value) != values.end()) {
+            prev->next = current->next;
+            delete current;
+            --m_size;
+            current = prev->next;
+        } else {
+            values.insert(current->value);
+            prev = current;
+            current = current->next;
+        }
+    }
+#endif
 }
 
 export template <typename Type>
