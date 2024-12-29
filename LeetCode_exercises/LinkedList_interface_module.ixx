@@ -8,9 +8,10 @@ export template <typename Type>
 class LinkedList{
     class Node{
     public:
-        Type value;
-        Node* next;
+        Type value{};
+        Node* next{nullptr};
 
+        Node() = default;
         Node(Type value) : value{value}, next{nullptr} {}
 
         friend std::ostream& operator<<(std::ostream& os, const Node& node)
@@ -46,6 +47,10 @@ public:
     auto insert(size_t index, Type value) -> bool;
     auto deleteNode(size_t index) -> void;
     auto reverse() -> void;
+    auto findMiddleNode() -> Node*;
+    auto hasLoop() -> bool;
+    auto findKthFromEnd(int k) -> Node*;
+    auto partitionList(Type value) -> void;
     
     friend std::ostream& operator<<(std::ostream& os, const LinkedList<Type>& list)
     {
@@ -191,6 +196,73 @@ auto LinkedList<Type>::reverse() -> void
         slow = temp;
         temp = fast;
     }
+}
+
+template <typename Type>
+auto LinkedList<Type>::findMiddleNode() -> Node*
+{
+    Node* fast{ m_head };
+    Node* slow{ m_head };
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+    }
+    return slow;
+}
+
+export template <typename Type>
+auto LinkedList<Type>::hasLoop() -> bool
+{   
+    Node* fast{ m_head };
+    Node* slow{ m_head };
+    while (fast && fast->next) {
+        slow = slow->next;
+        fast = fast->next->next;
+        if (slow == fast) return true;
+    }
+    return false;
+}
+
+export template <typename Type>
+auto LinkedList<Type>::findKthFromEnd(int k) -> Node*
+{
+    if (!m_head) return nullptr;
+    Node* fast{ m_head };
+    Node* slow{ m_head };
+    for (size_t i{ 0 }; i < k; ++i) {
+        if (!fast) return nullptr;
+        fast = fast->next;
+    }
+    while (fast) {
+        fast = fast->next;
+        slow = slow->next;
+    }
+    return slow;
+}
+
+export template <typename Type>
+auto LinkedList<Type>::partitionList(Type value) -> void {
+    Node* less{ new Node{} };
+    Node* less_tail{ less };
+    Node* more_and_equal{ new Node{} };
+    Node* more_tail{ more_and_equal };
+    Node* current{ m_head };
+    while (current) {
+        if (current->value < value) {
+            less_tail->next = current;
+            less_tail = current;
+        } else {
+            more_tail->next = current;
+            more_tail = current;
+        }
+        current = current->next;
+    }
+    more_tail->next = nullptr;
+    less_tail->next = more_and_equal->next;
+    m_head = less->next;
+    m_tail = more_tail;
+    delete less;
+    delete more_and_equal;
 }
 
 export template <typename Type>
