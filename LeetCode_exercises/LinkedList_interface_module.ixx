@@ -55,6 +55,8 @@ public:
     auto findKthFromEnd(int k) -> Node*;
     auto partitionList(Type value) -> void;
     auto removeDuplicates() -> void;
+    auto binaryToDecimal() -> int;
+    auto reverseBetween(int m, int n) -> void;
     
     friend std::ostream& operator<<(std::ostream& os, const LinkedList<Type>& list)
     {
@@ -125,8 +127,7 @@ export template <typename Type>
 auto LinkedList<Type>::prepend(Type value) -> void
 {
     Node* temp{ new Node{ value } };
-    if (m_size >= 1)
-    {
+    if (m_size >= 1) {
         temp->next = m_head;
         m_head = temp;
     } else {
@@ -308,6 +309,40 @@ auto LinkedList<Type>::removeDuplicates() -> void
         }
     }
 #endif
+}
+
+template <typename Type>
+auto LinkedList<Type>::binaryToDecimal() -> int
+{
+    uint64_t num{ 0 };
+    Node* current{ m_head };
+    while (current) {
+        num = num * 2 + current->value;
+        current = current->next;
+    }
+    return num;
+}
+
+template <typename Type>
+auto LinkedList<Type>::reverseBetween(int m, int n) -> void
+{
+    if (!head || !head->next) return;
+    Node* dummy{ new Node(0) };
+    dummy->next = head;
+    Node* prev{ dummy };
+    for (size_t i{ 0 }; i < m; ++i) {
+            prev = prev->next;
+    }
+    Node* current{ prev->next };
+    for (size_t i{ 0 }; i < n-m; ++i) {
+        Node* ahead{ current->next };
+        current->next = ahead->next;
+        ahead->next = prev->next;
+        prev->next = ahead;
+    }
+    
+    head = dummy->next;
+    delete dummy;
 }
 
 export template <typename Type>
