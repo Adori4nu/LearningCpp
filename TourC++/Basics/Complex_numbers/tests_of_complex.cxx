@@ -21,7 +21,7 @@ int main()
 #if COMPLEX_IMP == 52
     std::cout << "Podrozdział 5" << std::endl;
     complex comp{ 6, 9};
-    f();
+    f(comp);
     std::cout << "funkcja wykonana" << std::endl;
 
 #endif

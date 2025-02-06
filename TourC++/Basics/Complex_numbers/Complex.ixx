@@ -13,7 +13,7 @@ export class complex{
 public:
     complex(double r, double i) : re{r}, im{i} {}
     complex(double r) : re{r}, im{0} {}
-    complex(complex z): re{z.re}, im{z.im} {}
+    complex(complex& z): re{z.re}, im{z.im} {}
 
     double real() const { return re; }
     void real(double d) { re = d; }
@@ -71,5 +71,8 @@ export complex operator-(complex a, complex b) { return a-=b; }
 export complex operator-(complex a) { return { -a.real(), -a.imag() }; }
 export complex operator*(complex a, complex b) { return a*=b; }
 export complex operator/(complex a, complex b) { return a/=b; }
+
+export bool operator==(complex a, complex b) { return a.real() == b.real() && a.imag() == b.imag(); }
+export bool operator!=(complex a, complex b) { return !(a==b); }
 #pragma endregion
 #endif
