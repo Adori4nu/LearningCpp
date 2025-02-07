@@ -85,9 +85,13 @@ public:
     
     using NodePtr = Node*;
     typename Doubly_LinkedList<Type>::Node* get(size_t index);
+    auto set(size_t index, Type value) -> bool;
+    auto insert(size_t index, Type value) -> bool;
+    auto deleteNode(size_t index) -> void;
 };
 #pragma endregion
 #pragma region Doubly Linked List implementation and more complex functionality
+
 export template <typename Type>
 Doubly_LinkedList(Type) -> Doubly_LinkedList<Type>;
 
@@ -167,6 +171,71 @@ typename Doubly_LinkedList<Type>::Node *Doubly_LinkedList<Type>::get(size_t inde
         }
     }
     return temp;
+}
+
+export template <typename Type>
+auto Doubly_LinkedList<Type>::set(size_t index, Type value) -> bool
+{
+    Node* temp{ get(index) };
+    if (temp) {
+        temp->value = value;
+        return true;
+    }
+    return false;
+}
+
+export template <typename Type>
+auto Doubly_LinkedList<Type>::insert(size_t index, Type value) -> bool
+{
+    if (index < 0 || index > m_size) return false;
+    if (index == 0) {
+        prepend(value);
+        return true;
+    }
+    if (index == m_size) {
+        append(value);
+        return true;
+    }
+
+    Node* newNode{ new Node(value) };
+    Node* before{ get(index - 1) };
+    Node* after{ before->next };
+
+    newNode->prev = before;
+    newNode->next = after;
+    before->next = newNode;
+    after->prev = newNode;
+    ++m_size;
+
+    return true;
+}
+
+export template <typename Type>
+auto Doubly_LinkedList<Type>::deleteNode(size_t index) -> void
+{
+    if (index < 0 || index >= m_size) return;
+    if (index == 0) {
+        return deleteFirst();
+    }
+    if (index == m_size - 1) {
+        
+        return deleteLast();
+    }
+
+    Node* temp{ get(index) };
+    /* Readable version */
+    // Node* before{ temp->prev };
+    // Node* after{ temp->next };
+    
+    // before->next = after;
+    // after->prev = before;
+
+    /* Optimized for space */
+    temp->prev->next = temp->next;
+    temp->next->prev = temp->prev;
+
+    delete temp;
+    --m_size;
 }
 
 #pragma endregion

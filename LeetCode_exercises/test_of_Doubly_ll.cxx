@@ -74,5 +74,16 @@ auto main() -> int
         std::cout << *res << "\n";
     else
         std::cout << "Nullptr\n";
+    
+    TEST_OPERATION(empty_dll, Doubly_LinkedList::set, -1, 9);
+    test_operation("empty_dll", empty_dll, [](auto& c) { c.set(1, 666); });
+    test_operation("empty_dll", empty_dll, [](auto& c) { c.set(5, 666); });
 
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.insert(0, 304); });
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.insert(2, 2'137); });
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.insert(2, 666); });
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.insert(5, 911); });
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.deleteNode(1); });
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.deleteNode(0); });
+    test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.deleteNode(1); });
 }
