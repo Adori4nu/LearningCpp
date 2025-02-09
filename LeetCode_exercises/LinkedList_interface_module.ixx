@@ -90,12 +90,10 @@ export template <typename Type>
 auto LinkedList<Type>::append(Type value) -> void
 {
     Node* temp{ new Node{value} };
-    if (m_size == 0)
-    {
+    if (m_size == 0) {
         m_head = m_tail = temp;
     } 
-    else
-    {
+    else {
         m_tail->next = temp;
         m_tail = temp;
     }
@@ -141,8 +139,7 @@ auto LinkedList<Type>::deleteFirst() -> void
 {
     if (m_size == 0) return;
     Node* temp{ m_head };
-    if (m_size > 1)
-    {
+    if (m_size > 1) {
         m_head = m_head->next;
     } else {
         m_head = m_tail = nullptr;

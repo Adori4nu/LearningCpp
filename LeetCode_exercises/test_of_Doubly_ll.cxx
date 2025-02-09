@@ -2,18 +2,13 @@
 #include <cassert>
 
 import Doubly_LL;
+import Test_helpers;
 
 #define TEST_OPERATION(container, operation, ...) \
     do { \
         container.operation(__VA_ARGS__); \
         std::cout << "Content of " << #container << ":\n" << container << "\n"; \
     } while (0);
-
-template<typename Container, typename Func, typename... Args>
-void test_operation(const std::string& name, Container& container, Func operation, Args&&... args) {
-    operation(container, std::forward<Args>(args)...);
-    std::cout << "Content of " << name << ":\n" << container << "\n";
-}
 
 auto testSwapFirstLast() -> void {
     // Test empty and single node lists
