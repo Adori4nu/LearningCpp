@@ -1,4 +1,5 @@
 #include <iostream>
+#include <cassert>
 
 import Doubly_LL;
 
@@ -12,6 +13,78 @@ template<typename Container, typename Func, typename... Args>
 void test_operation(const std::string& name, Container& container, Func operation, Args&&... args) {
     operation(container, std::forward<Args>(args)...);
     std::cout << "Content of " << name << ":\n" << container << "\n";
+}
+
+auto testSwapFirstLast() -> void {
+    // Test empty and single node lists
+    Doubly_LinkedList<int> emptyList;
+    emptyList.swapFirstLast();
+    assert(emptyList.size() == 0);
+
+    Doubly_LinkedList<int> singleList(1);
+    singleList.swapFirstLast();
+    assert(singleList.size() == 1);
+    assert(singleList.getHead() == 1);
+    assert(singleList.getTail() == 1);
+
+    // Test 2-node list
+    Doubly_LinkedList<int> twoNodeList;
+    twoNodeList.append(1);
+    twoNodeList.append(2);
+    twoNodeList.swapFirstLast();
+    assert(twoNodeList.getHead() == 2);
+    assert(twoNodeList.getTail() == 1);
+    assert(twoNodeList.get(0)->next->prev == twoNodeList.get(0));
+    assert(twoNodeList.get(1)->prev->next == twoNodeList.get(1));
+
+    // Test longer list
+    Doubly_LinkedList<int> longList;
+    for(int i = 1; i <= 5; i++) {
+        longList.append(i);
+    }
+    longList.swapFirstLast();
+    assert(longList.getHead() == 5);
+    assert(longList.getTail() == 1);
+    assert(longList.get(0)->next->prev == longList.get(0));
+    assert(longList.get(4)->prev->next == longList.get(4));
+    
+    std::cout << "All swap tests passed!\n";
+}
+
+auto testReverse() -> void {
+    
+    Doubly_LinkedList<int> emptyList;
+    emptyList.reverse();
+    assert(emptyList.size() == 0);
+
+    emptyList.append(1);
+    emptyList.reverse();
+    assert(emptyList.size() == 1);
+    assert(emptyList.getHead() == 1);
+    assert(emptyList.getTail() == 1);
+
+    emptyList.append(2);
+    emptyList.reverse();
+    assert(emptyList.size() == 2);
+    assert(emptyList.getHead() == 2);
+    assert(emptyList.getTail() == 1);
+
+    Doubly_LinkedList<int> longList;
+    for(int i = 1; i <= 5; i++) {
+        longList.append(i);
+    }
+    std::cout << "Content of longList:\n" << longList << "\n";
+    
+    longList.reverse();
+    assert(longList.getHead() == 5);
+    assert(longList.getTail() == 1);
+    assert(longList.get(0)->value == 5);
+    assert(longList.get(1)->value == 4);
+    assert(longList.get(2)->value == 3);
+    assert(longList.get(3)->value == 2);
+    assert(longList.get(4)->value == 1);
+
+    std::cout << "Content of longList:\n" << longList << "\n";
 }
 
 auto main() -> int
@@ -86,4 +159,7 @@ auto main() -> int
     test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.deleteNode(1); });
     test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.deleteNode(0); });
     test_operation("fu_bar_dll", fu_bar_dll, [](auto& c) { c.deleteNode(1); });
+
+    testSwapFirstLast();
+    testReverse();
 }

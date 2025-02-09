@@ -88,6 +88,10 @@ public:
     auto set(size_t index, Type value) -> bool;
     auto insert(size_t index, Type value) -> bool;
     auto deleteNode(size_t index) -> void;
+    auto swapFirstLast() -> void;
+    auto reverse() -> void;
+    auto isPalindrome() -> bool;
+    auto swapPairs() -> void;
 };
 #pragma endregion
 #pragma region Doubly Linked List implementation and more complex functionality
@@ -236,6 +240,121 @@ auto Doubly_LinkedList<Type>::deleteNode(size_t index) -> void
 
     delete temp;
     --m_size;
+}
+
+template <typename Type>
+auto Doubly_LinkedList<Type>::swapFirstLast() -> void
+{
+    if (m_size < 2) return;
+    if (m_size == 2) {
+        m_tail = m_head;
+        m_head = m_head->next;
+        m_head->prev = nullptr;
+        m_tail->next = nullptr;
+        m_tail->prev = m_head;
+        m_head->next = m_tail;
+        return;
+    }
+    Node* temp{ m_head };
+    
+    m_head->next->prev = m_tail;
+    m_tail->prev->next = m_head;
+
+    m_tail->next = m_head->next;
+    m_head->prev = m_tail->prev;
+
+    m_head->next = nullptr;
+    m_tail->prev = nullptr;
+    
+    m_head = m_tail;
+    m_tail = temp;
+}
+
+export template <typename Type>
+auto Doubly_LinkedList<Type>::reverse() -> void
+{
+    if (m_size < 2) return;
+    
+    Node* temp = m_head;
+    if (m_size == 2) {
+        m_head = m_tail;
+        m_tail = temp;
+        m_head->next = m_tail;
+        m_head->prev = nullptr;
+        m_tail->prev = m_head;
+        m_tail->next = nullptr;
+        return;
+    }
+    
+    Node* current = m_head;
+    temp = nullptr;
+    
+    while (current) {
+        temp = current->next;
+        
+        current->next = current->prev;
+        current->prev = temp;
+        
+        current = temp;
+    }
+    
+    temp = m_head;
+    m_head = m_tail;
+    m_tail = temp;
+}
+
+export template <typename Type>
+auto Doubly_LinkedList<Type>::isPalindrome() -> bool
+{
+    if (m_size < 0) return false;
+    if (m_size == 0 || m_size == 1) return true;
+
+    Node* forwardNode{ m_head };
+    Node* backwardNode{ m_tail };
+
+    for (int i{ 0 }; i < m_size / 2; ++i) {
+        if (forwardNode->value != backwardNode->value)
+            return false;
+        forwardNode = forwardNode->next;
+        backwardNode = backwardNode->prev;
+    }
+
+    return true;
+}
+
+template <typename Type>
+auto Doubly_LinkedList<Type>::swapPairs() -> void
+{
+    if (m_size < 2) return;
+
+    Node* current{ m_head };
+    Node* newHead{ m_head->next };
+
+    while (current && current->next) {
+        Node* first{ current };
+        Node* second{ current->next };
+        Node* nextPair{ current->next->next };
+
+        second->prev = first->prev;
+        first->next = nextPair;
+        first->prev = second;
+        second->next = first;
+
+        if (second->prev) {
+            second->prev->next = second;
+        }
+
+        if (nextPair) {
+            nextPair->prev = first;
+        }
+
+        current = nextPair;
+    }
+
+    m_head = newHead;
+    if (m_size % 2 == 0) {
+        m_tail = m_tail->prev;
+    }
 }
 
 #pragma endregion
