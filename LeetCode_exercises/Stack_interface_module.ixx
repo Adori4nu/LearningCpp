@@ -1,6 +1,8 @@
 module;
 
 #include <iostream>
+#include <string>
+#include <string_view>
 
 export module Stack;
 #pragma region Underlying Node based storage
@@ -146,7 +148,6 @@ public:
             m_data = new_data;
             m_capacity = new_capacity;
         }
-        std::cout << "Pushing value: [ " << value << " ]\n";
         // Construct new element in place
         new(m_data + m_size) Type(value);
         ++m_size;
@@ -154,7 +155,6 @@ public:
 
     auto pop() -> void {
         if (m_size > 0) {
-            std::cout << "Popping value: [ " << m_data[m_size - 1] << " ]\n";
             m_data[m_size - 1].~Type();
             --m_size;
         }
@@ -171,7 +171,7 @@ public:
 export template <typename Type, template <typename> typename Storage = ListStorage>
 class Stack{
 
-    Storage<Type> m_storage;    
+    Storage<Type> m_storage;
 
 public:
 
@@ -208,5 +208,65 @@ using NodeBasedStack = Stack<Type, ListStorage>;
 
 export template<typename Type>
 using VectorBasedStack = Stack<Type, VectorStorage>;
+
+#pragma endregion
+#pragma region LC excercises
+
+export auto reverseString(std::string_view str) -> std::string
+{
+    Stack<char, VectorStorage> stack{};
+    for (char c : str) {
+        stack.push(c);
+    }
+    
+    std::string result{};
+    result.reserve(str.length());
+    while (!stack.empty()) {
+        result += stack.top();
+        stack.pop();
+    }
+    
+    return result;
+}
+
+export auto isBalancedParentheses(std::string_view str) -> bool
+{
+    Stack<char, VectorStorage> stack_open_par{};
+    for (const char c : str) {
+        if (c == '(') stack_open_par.push(c);
+        else if (c == ')') {
+            if (stack_open_par.empty() || stack_open_par.top() != '(') return false;
+            stack_open_par.pop();
+        }
+    }
+    return stack_open_par.empty();
+}
+
+export auto sortStack(Stack<int>& input_stack) -> void
+{
+    if (input_stack.empty() || input_stack.size() == 1) {
+        return;
+    }
+
+    Stack<int, VectorStorage> additional_stack{};
+    
+    while (!input_stack.empty()) {
+
+        int current{input_stack.top()};
+        input_stack.pop();
+
+        while(!additional_stack.empty() && additional_stack.top() > current) {
+            input_stack.push(additional_stack.top());
+            additional_stack.pop();
+        }
+
+        additional_stack.push(current);
+    }
+
+    while (!additional_stack.empty()) {
+        input_stack.push(additional_stack.top());
+        additional_stack.pop();
+    }
+}
 
 #pragma endregion
