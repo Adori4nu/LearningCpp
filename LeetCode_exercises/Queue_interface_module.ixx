@@ -3,34 +3,33 @@ module;
 #include <iostream>
 
 export module Queue;
-#pragma region Queue declaration
-export template <typename Type>
-class Queue{
-    class Node {
-    public:
-        Type value{};
-        Node* next{nullptr};
-
-        Node() = default;
-        Node(Type value) : value{value}, next{nullptr} {};
-
-        friend std::ostream& operator<<(std::ostream& os, const Node& node)
-        {
-            os << "[ value: " << node.value << ", next: " << reinterpret_cast<void*>(node.next) << " ]";
-        }
-        
-    };
-
+#pragma region List Storage backend implementation
+template <typename Type>
+class QueListStorage {
+    struct Node {
+            Type value{};
+            Node* next{nullptr};
+    
+            Node() = default;
+            explicit Node(const Type& value) : value{value}, next{nullptr} {};
+    
+            friend std::ostream& operator<<(std::ostream& os, const Node& node)
+            {
+                os << "[ value: " << node.value << ", next: " << reinterpret_cast<void*>(node.next) << " ]";
+            }
+            
+        };
+    
     Node* m_front{nullptr};
     Node* m_back{nullptr};
     size_t m_size{};
 
 public:
-    Queue() = default;
-    Queue(Type value) : m_front{new Node(value)}, m_back{m_front}, m_size{1} {} 
 
-    ~Queue()
-    {
+    QueListStorage() = default;
+    explicit QueListStorage(const Type& value) : m_front{new Node(value)}, m_back{m_front}, m_size{1} {} 
+
+    ~QueListStorage() {
         Node* current{ m_back };
         while (m_back)
         {
@@ -39,12 +38,10 @@ public:
             delete current;
             current = m_back;
         }
-        
     }
 
-    friend std::ostream& operator<<(std::ostream& os, const Queue<Type>& stack)
-    {
-        typename Queue<Type>::Node* current{ Queue.m_back };
+    friend std::ostream& operator<<(std::ostream& os, const QueListStorage& stack) {
+        Node* current{ Queue.m_back };
         os << "[ back: ";
         while (current) {
             os << current->value;
@@ -65,9 +62,69 @@ public:
     Type& back() { return m_back; }
     const Type& back() const { return m_back; }
 
-    auto push(const Type& value) -> void; // enqueue
+    auto push(const Type& value) -> void // enqueue
+    {
+        Node* newNode{ new Node(value) };
+        if (empty()) {
+            m_back = m_front = newNode;
+        } else {
+            m_back->next = newNode;
+            m_back = newNode;
+        }
+        ++m_size;
+    }
+
+    auto pop() -> void // dequeue
+    {
+        if (m_size == 0) return;
+        Node* current{ m_front };
+        if (m_size == 1) {
+            m_front = m_back = nullptr;
+        } else {
+            m_front = m_front->next;
+        }
+        delete current;
+        --m_size;
+    }
     // void emplace(Args&&... args) -> void;
-    auto pop() -> void; // dequeue
+};
+#pragma endregion
+#pragma region Vector Storage backend declaration
+template <typename Type>
+class QueVectorStorage {
+    static constexpr size_t INITIAL_CAPACITY = 10;
+    Type* m_data{nullptr};
+    size_t m_size{};
+    size_t m_capacity{};
+
+    
+};
+#pragma endregion
+#pragma region Queue declaration
+export template <typename Type, template <typename> typename Storage = QueListStorage>
+class Queue {
+    
+    Storage m_storage;
+
+public:
+    Queue() = default;
+    Queue(const Type& value) : m_storage{value} {} 
+
+    friend std::ostream& operator<<(std::ostream& os, const Queue& queue) {
+        return os << queue.m_storage;
+    }
+
+    bool empty() { return m_storage.empty(); }
+    size_t size() { return m_storage.size(); }
+
+    Type& front() { return m_storage.front(); }
+    const Type& front() const { return m_storage.front(); }
+    Type& back() { return m_storage.back(); }
+    const Type& back() const { return m_storage.back(); }
+
+    auto push(const Type& value) -> void { return m_storage.push(); }; // enqueue
+    // void emplace(Args&&... args) -> void;
+    auto pop() -> void {return m_storage.pop(); }; // dequeue
 };
 #pragma endregion
 #pragma region Queue implementation
@@ -75,32 +132,7 @@ public:
 export template <typename Type>
 Queue(Type) -> Queue<Type>;
 
-export template <typename Type>
-auto Queue<Type>::push(const Type &value) -> void
-{
-    Node* newNode{ new Node(value) };
-    if (empty()) {
-        m_back = m_front = newNode;
-    } else {
-        m_back->next = newNode;
-        m_back = newNode;
-    }
-    ++m_size;
-}
 
-export template <typename Type>
-auto Queue<Type>::pop() -> void
-{
-    if (m_size == 0) return;
-    Node* current{ m_front };
-    if (m_size == 1) {
-        m_front = m_back = nullptr;
-    } else {
-        m_front = m_front->next;
-    }
-    delete current;
-    --m_size;
-}
 
 #pragma endregion
 
