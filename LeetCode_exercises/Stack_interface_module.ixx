@@ -122,7 +122,7 @@ public:
 
     friend std::ostream& operator<<(std::ostream& os, const VectorStorage& storage) {
         os << "[ top: ";
-        for (size_t i{ storage.m_size}; i > 0; --i) {
+        for (size_t i{ storage.m_size }; i > 0; --i) {
             os << storage.m_data[i - 1];
             if (i > 1) {
                 os << " -> ";
