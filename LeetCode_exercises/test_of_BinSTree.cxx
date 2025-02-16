@@ -9,7 +9,19 @@ import Test_helpers;
 auto main() -> int
 {
     TreeNodeBase<int> empty_int_tree;
-    std::cout << empty_int_tree.m_root;
+    std::cout << empty_int_tree << "\n";
     TreeNodeBase int_tree{69};
-    std::cout << "\n" << int_tree.m_root;
+    std::cout << int_tree << "\n";
+
+    TreeNodeBase<std::string> string_tree{"noice"};
+    test_operation("string_tree", string_tree, [](auto& c){ c.insert("wow"); });
+    test_operation("string_tree", string_tree, [](auto& c){ c.insert("LOL"); });
+    test_operation("string_tree", string_tree, [](auto& c){ c.insert("aaa"); });
+    test_operation("string_tree", string_tree, [](auto& c){ c.insert("boo!"); });
+    std::cout << "\033[34m--- test ---\nString_tree contains: " << "boo!" << "\033[0m\n";
+    std::cout << (string_tree.contains("boo!") ? "\033[1;32mTrue" : "\033[1;31mFalse") 
+    << "\033[0m\n";
+    std::cout << "\033[34m--- test ---\nString_tree contains: " << "Nananananananana Batman!" << "\033[0m\n";
+    std::cout << (string_tree.contains("Nananananananana Batman!") ? "\033[1;32mTrue" : "\033[1;31mFalse") 
+    << "\033[0m\n";
 }
