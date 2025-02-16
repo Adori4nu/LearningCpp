@@ -1,6 +1,7 @@
 module;
 
 #include <iostream>
+#include <string>
 
 export module Doubly_LL;
 
@@ -17,12 +18,13 @@ class Doubly_LinkedList
         Node() = default;
         Node(Type value) : value{value}, next{nullptr}, prev{nullptr} {}
 
-        friend std::ostream& operator<<(std::ostream& os, const Node& node)
+        friend std::ostream& operator<<(std::ostream& os, const Node* node)
         {
-            os << "[ value: " << node.value
-             << ", next: " << reinterpret_cast<void*>(node.next)
-             << ", prev: " << reinterpret_cast<void*>(node.prev)
-             << " ]";
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+            << " value: "  << std::dec << (node == nullptr ? "none" : std::to_string(node->value))
+            << ", next: 0x" << std::hex << (node == nullptr ? 0 : reinterpret_cast<uintptr_t>(node->next))
+            << ", prev: 0x" << std::hex << (node == nullptr ? 0 : reinterpret_cast<uintptr_t>(node->prev))
+            << " ]" << std::dec;
             return os;
         }
     };

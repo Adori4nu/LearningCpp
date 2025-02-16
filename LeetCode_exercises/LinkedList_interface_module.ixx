@@ -4,6 +4,7 @@ module;
 #include <unordered_set>
 #endif
 #include <iostream>
+#include <string>
 
 export module LinkedList;
 
@@ -17,9 +18,12 @@ class LinkedList{
         Node() = default;
         Node(Type value) : value{value}, next{nullptr} {}
 
-        friend std::ostream& operator<<(std::ostream& os, const Node& node)
+        friend std::ostream& operator<<(std::ostream& os, const Node* node)
         {
-            os << "[ value: " << node.value << ", next: " << reinterpret_cast<void*>(node.next) << " ]";
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+            << " value: "  << std::dec << (node == nullptr ? "none" : std::to_string(node->value))
+            << ", next: 0x" << std::hex << (node == nullptr ? 0 : reinterpret_cast<uintptr_t>(node->next))
+            << " ]" << std::dec;
             return os;
         }
     };
@@ -323,9 +327,9 @@ auto LinkedList<Type>::binaryToDecimal() -> int
 template <typename Type>
 auto LinkedList<Type>::reverseBetween(int m, int n) -> void
 {
-    if (!head || !head->next) return;
+    if (!m_head || !m_head->next) return;
     Node* dummy{ new Node(0) };
-    dummy->next = head;
+    dummy->next = m_head;
     Node* prev{ dummy };
     for (size_t i{ 0 }; i < m; ++i) {
             prev = prev->next;
@@ -338,7 +342,7 @@ auto LinkedList<Type>::reverseBetween(int m, int n) -> void
         prev->next = ahead;
     }
     
-    head = dummy->next;
+    m_head = dummy->next;
     delete dummy;
 }
 

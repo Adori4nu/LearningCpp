@@ -123,23 +123,21 @@ auto main() -> int
     test_operation("empty_dll", empty_dll, [](auto& c){ c.append(777); });
 
     std::cout << "Content of empty_ll at index[-1]: ";
-    if (auto res{empty_dll.get(-1)})
-        std::cout << *res << "\n";
-    else
-        std::cout << "Nullptr\n";
+    std::cout << empty_dll.get(-1) << "\n";
+
     std::cout << "Content of empty_ll at index[1]: ";
     if (auto res{empty_dll.get(1)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     std::cout << "Content of empty_ll at index[5]: ";
     if (auto res{empty_dll.get(5)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     std::cout << "Content of empty_ll at index[0]: ";
     if (auto res{empty_dll.get(0)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     

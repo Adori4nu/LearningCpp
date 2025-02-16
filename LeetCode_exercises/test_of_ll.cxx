@@ -48,13 +48,13 @@ auto main() -> int
 
     std::cout << "Content of empty_ll at index[-1]: ";
     if (auto res{empty_ll.get(-1)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     std::cout << "Content of empty_ll at index[0]: " << empty_ll.get(0) << "\n";
     std::cout << "Content of empty_ll at index[0]: ";
     if (auto res{empty_ll.get(0)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     std::cout << "Content of empty_ll at index[1]: " << empty_ll.get(1) << "\n";
@@ -62,12 +62,12 @@ auto main() -> int
     std::cout << "Content of empty_ll at index[3]: " << empty_ll.get(3) << "\n";
     std::cout << "Content of empty_ll at index[3]: ";
     if (auto res{empty_ll.get(3)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     std::cout << "Content of empty_ll at index[4]: ";
     if (auto res{empty_ll.get(4)})
-        std::cout << *res << "\n";
+        std::cout << res << "\n";
     else
         std::cout << "Nullptr\n";
     empty_ll.set(3, 696'696);

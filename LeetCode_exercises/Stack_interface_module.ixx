@@ -15,9 +15,13 @@ class ListStorage{
         Node() = default;
         explicit Node(const Type& value) : value{value}, next{nullptr} {};
 
-        friend std::ostream& operator<<(std::ostream& os, const Node& node)
+        friend std::ostream& operator<<(std::ostream& os, const Node* node)
         {
-            os << "[ value: " << node.value << ", next: " << reinterpret_cast<void*>(node.next) << " ]";
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+            << " value: "  << std::dec << (node == nullptr ? "none" : std::to_string(node->value))
+            << ", next: 0x" << std::hex << (node == nullptr ? 0 : reinterpret_cast<uintptr_t>(node->next))
+            << " ]" << std::dec;
+            return os;
         }
     };
     
