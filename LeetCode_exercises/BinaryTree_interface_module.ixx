@@ -6,7 +6,7 @@ module;
 export module Bin_Search_Tree;
 #pragma region List Storage backend implementation
 export template <typename Type>
-class TreeNodeBase{
+class TreeNodeBase {
     struct Node {
         Type value{};
         Node* left{nullptr};
@@ -122,3 +122,4 @@ public:
         return false;
     }
 };
+#pragma endregion

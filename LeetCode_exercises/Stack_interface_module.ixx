@@ -7,7 +7,7 @@ module;
 export module Stack;
 #pragma region Underlying Node based storage
 template <typename Type>
-class ListStorage{
+class ListStorage {
     struct Node {
         Type value{};
         Node* next{nullptr};
