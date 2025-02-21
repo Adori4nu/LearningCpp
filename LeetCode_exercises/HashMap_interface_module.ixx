@@ -3,6 +3,7 @@ module;
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <vector>
 
 export module Hash_Map; // Unordered Map
 #pragma region Underlying Node based collision storage
@@ -65,6 +66,7 @@ public:
             }
             m_dataMap[i] = nullptr;
         }
+        m_size = 0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const NodeHashMap& storage) {
@@ -80,5 +82,57 @@ public:
         }
         return os;
     }
+
+    auto set(std::string_view key, const Type& value) -> void {
+        size_t index{ hash(key) % M_SIZE };
+
+        if (!m_dataMap[index]) {
+            m_dataMap[index] = new Node(key, value);
+            ++m_size;
+            return;
+        }
+
+        Node* current{ m_dataMap[index] };
+        while (current) {
+            if (current->key == key) {
+                current->value = value;
+                return;
+            }
+
+            if (!current->next) break;
+
+            current = current->next;
+        }
+        
+        current->next = new Node(key, value);
+        ++m_size;
+    }
+
+    auto get(std::string_view key) -> Type& { // I need to consider using std::optional for that one
+        size_t index{ get_index(key) };
+        Node* current{ m_dataMap[index] };
+        while (current) {
+            if (current->key == key) return current->value;
+            current = current->next;
+        }
+        static Type default_value{};
+        return default_value;
+    }
+
+    auto keys() -> std::vector<std::string_view> {
+        std::vector<std::string_view> all_keys;
+        for (size_t i{ 0 }; i < M_SIZE; ++i) {
+            Node* current{ m_dataMap[i] };
+            while (current) {
+                all_keys.push_back(current->key);
+                current = current->next;
+            }
+        }
+        return all_keys;
+    }
+
+    bool empty() const { return m_size == 0; }
+    size_t size() const { return m_size; }
+    size_t get_index(std::string_view key) const { return hash(key) % M_SIZE; }
 };
 #pragma endregion
