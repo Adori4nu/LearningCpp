@@ -44,20 +44,24 @@ class NodeHashMap {
         return hash;
     }
 
-    static constexpr size_t M_SIZE = 13;
-    Node* m_dataMap[M_SIZE]{};
+    static constexpr float MAX_LOAD_FACTOR = 0.75f;
+    size_t m_bucketCount{};
+    Node** m_dataMap{};
     size_t m_size{0};
 
 public:
 
-    NodeHashMap() = default;
-    explicit NodeHashMap(std::string_view key, const Type& value) : m_size{1} {
-        size_t index{ hash(key) % M_SIZE };
+    explicit NodeHashMap(size_t bucket_count = 13)
+     : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()} {}
+
+    explicit NodeHashMap(std::string_view key, const Type& value, size_t bucket_count = 13)
+     : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()}, m_size{1} {
+        size_t index{ hash(key) % m_bucketCount };
         m_dataMap[index] = new Node{key, value};
     }
 
     ~NodeHashMap() {
-        for (size_t i{0}; i < M_SIZE; ++i) {
+        for (size_t i{0}; i < m_bucketCount; ++i) {
             Node* current{ m_dataMap[i] };
             while (current) {
                 Node* next{ current->next };
@@ -66,12 +70,13 @@ public:
             }
             m_dataMap[i] = nullptr;
         }
+        delete[] m_dataMap;
         m_size = 0;
     }
 
     friend std::ostream& operator<<(std::ostream& os, const NodeHashMap& storage) {
         os << "[ Node Base Hash Map (Unordered Map) ]\n";
-        for (size_t i{0}; i < M_SIZE; ++i) {
+        for (size_t i{0}; i < storage.m_bucketCount; ++i) {
             os << "[ Bucket " << i << ": ]";
             Node* current{ storage.m_dataMap[i] };
             while (current) {
@@ -83,45 +88,84 @@ public:
         return os;
     }
 
-    auto set(std::string_view key, const Type& value) -> void {
-        size_t index{ hash(key) % M_SIZE };
+    auto check_and_rehash() -> void {
+        if (load_factor() >= MAX_LOAD_FACTOR) {
+            rehash(m_bucketCount * 2);
+        }
+    }
 
-        if (!m_dataMap[index]) {
-            m_dataMap[index] = new Node(key, value);
-            ++m_size;
+    auto load_factor() const -> float {
+        return static_cast<float>(m_size) / static_cast<float>(m_bucketCount);
+    }
+
+    auto rehash(size_t new_bucket_count)-> void {
+        
+        if (new_bucket_count <= m_bucketCount) {
             return;
         }
 
-        Node* current{ m_dataMap[index] };
-        while (current) {
-            if (current->key == key) {
-                current->value = value;
-                return;
+        // Store old data
+        Node** old_data_map = m_dataMap;
+        size_t old_bucket_count = m_bucketCount;
+
+        // Create new empty hash map with increased size
+        m_bucketCount = new_bucket_count;
+        m_dataMap = new Node*[m_bucketCount]();
+        m_size = 0;
+
+        for (size_t i{0}; i < old_bucket_count; ++i) {
+            Node* current{ old_data_map[i] };
+            while (current) {
+                Node* next{ current->next };
+                
+                // Re-hash and insert the node
+                set(current->key, current->value);
+                
+                // Delete the old node
+                current->next = nullptr;
+                delete current;
+
+                current = next;
             }
+        }
 
-            if (!current->next) break;
+        delete[] old_data_map;
+    }
 
+    auto set(std::string_view key, const Type& value) -> void {
+        size_t index{ hash(key) % m_bucketCount };
+    
+        if (!m_dataMap[index]) {
+            m_dataMap[index] = new Node(key, value);
+            ++m_size;
+            check_and_rehash();
+            return;
+        }
+    
+        Node* current{ m_dataMap[index] };
+        
+        while (current->next) {
             current = current->next;
         }
         
         current->next = new Node(key, value);
         ++m_size;
+        check_and_rehash();
     }
 
-    auto get(std::string_view key) -> Type& { // I need to consider using std::optional for that one
+    auto find(std::string_view key) -> Type* {
         size_t index{ get_index(key) };
         Node* current{ m_dataMap[index] };
         while (current) {
-            if (current->key == key) return current->value;
+            if (current->key == key) return &current->value;
             current = current->next;
         }
-        static Type default_value{};
-        return default_value;
+        return nullptr;
     }
 
     auto keys() -> std::vector<std::string_view> {
         std::vector<std::string_view> all_keys;
-        for (size_t i{ 0 }; i < M_SIZE; ++i) {
+        for (size_t i{ 0 }; i < m_bucketCount; ++i) {
             Node* current{ m_dataMap[i] };
             while (current) {
                 all_keys.push_back(current->key);
@@ -133,6 +177,6 @@ public:
 
     bool empty() const { return m_size == 0; }
     size_t size() const { return m_size; }
-    size_t get_index(std::string_view key) const { return hash(key) % M_SIZE; }
+    size_t get_index(std::string_view key) const { return hash(key) % m_bucketCount; }
 };
 #pragma endregion

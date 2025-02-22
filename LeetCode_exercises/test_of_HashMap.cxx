@@ -19,11 +19,11 @@ auto main() -> int
     test_operation("string_map", string_map, [](auto& c){ c.set("777", "lucky_one"); });
     test_operation("string_map", string_map, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
     
-    if (auto res{ string_map.get("69") }; res == "noice")
-    std::cout << "\033[32m" << res << "\033[0m\n";
+    if (auto res{ string_map.find("69") }; res && *res == "noice")
+    std::cout << "\033[32m" << *res << "\033[0m\n";
     else
     std::cout << "\033[31mResult not found in unordered map\033[0m\n";
-    if (auto res{ string_map.get("420") }; res == "")
+    if (auto res{ string_map.find("420") }; !res)
     std::cout << "\033[31mResult not found in unordered map\033[0m\n";
     
     test_operation("string_map", string_map, [](auto& c){ c.set("69", "Noice!!!"); });
