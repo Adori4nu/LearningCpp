@@ -51,10 +51,10 @@ class NodeHashMap {
 
 public:
 
-    explicit NodeHashMap(size_t bucket_count = 13)
+    explicit NodeHashMap(size_t bucket_count = 16)
      : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()} {}
 
-    explicit NodeHashMap(std::string_view key, const Type& value, size_t bucket_count = 13)
+    explicit NodeHashMap(std::string_view key, const Type& value, size_t bucket_count = 16)
      : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()}, m_size{1} {
         size_t index{ hash(key) % m_bucketCount };
         m_dataMap[index] = new Node{key, value};
@@ -98,7 +98,7 @@ public:
         return static_cast<float>(m_size) / static_cast<float>(m_bucketCount);
     }
 
-    auto rehash(size_t new_bucket_count)-> void {
+    auto rehash(size_t new_bucket_count) -> void {
         
         if (new_bucket_count <= m_bucketCount) {
             return;
