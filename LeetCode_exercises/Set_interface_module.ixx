@@ -7,41 +7,114 @@ module;
 #include <vector>
 
 export module Set; // keys only no duplicates
-export namespace myjunk
+namespace myjunk::internal
 {
-    #pragma region Underlying Node based collision storage
-    class NodeSet {
-        struct Node {
-            std::string key{};
-            Node* next{nullptr};
-    
-            Node() = default;
-            explicit Node(std::string_view key) : key{key}, next{nullptr} {}
-    
-            friend std::ostream& operator<<(std::ostream& os, const Node* node)
-            {
-                if (node == nullptr) {
-                    os << "[ address: 0x" << std::hex << 0
-                       << std::dec << ", key: none"
-                       << ", next: 0x0 ]";
-                    return os;
-                }
-                
-                os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
-                   << std::dec << ", key: " << node->key
-                   << ", next: 0x" << std::hex << reinterpret_cast<uintptr_t>(node->next)
-                   << " ]" << std::dec;
+    template <typename KeyType>
+    struct Set_Node {
+        KeyType key{};
+        Set_Node* next{nullptr};
+
+        Set_Node() = default;
+        explicit Set_Node(const KeyType& key) : key{key}, next{nullptr} {}
+
+        friend std::ostream& operator<<(std::ostream& os, const Set_Node* node)
+        {
+            if (node == nullptr) {
+                os << "[ address: 0x" << std::hex << 0
+                   << std::dec << ", key: none"
+                   << ", next: 0x0 ]";
                 return os;
             }
-        };
-    
-        auto hash(std::string_view key) const -> size_t {
-            size_t hash{};
-            for (char c : key) {
-                hash = (hash * 31) + c;
-            }
-            return hash;
+            
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+               << std::dec << ", key: " << node->key
+               << ", next: 0x" << std::hex << reinterpret_cast<uintptr_t>(node->next)
+               << " ]" << std::dec;
+            return os;
         }
+    };
+
+    template <>
+    struct Set_Node<std::string_view> {
+        std::string key{};
+        Set_Node* next{nullptr};
+
+        Set_Node() = default;
+        explicit Set_Node(std::string_view key) : key{key}, next{nullptr} {}
+
+        friend std::ostream& operator<<(std::ostream& os, const Set_Node* node)
+        {
+            if (node == nullptr) {
+                os << "[ address: 0x" << std::hex << 0
+                   << std::dec << ", key: none"
+                   << ", next: 0x0 ]";
+                return os;
+            }
+            
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+               << std::dec << ", key: " << node->key
+               << ", next: 0x" << std::hex << reinterpret_cast<uintptr_t>(node->next)
+               << " ]" << std::dec;
+            return os;
+        }
+    };
+    template <>
+    struct Set_Node<int> {
+        int key{};
+        Set_Node* next{nullptr};
+
+        Set_Node() = default;
+        explicit Set_Node(int key) : key{key}, next{nullptr} {}
+
+        friend std::ostream& operator<<(std::ostream& os, const Set_Node* node)
+        {
+            if (node == nullptr) {
+                os << "[ address: 0x" << std::hex << 0
+                   << std::dec << ", key: none"
+                   << ", next: 0x0 ]";
+                return os;
+            }
+            
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+               << std::dec << ", key: " << node->key
+               << ", next: 0x" << std::hex << reinterpret_cast<uintptr_t>(node->next)
+               << " ]" << std::dec;
+            return os;
+        }
+    };
+
+    template <typename KeyType>
+    inline auto hash(const KeyType& key) -> size_t {
+        return std::hash<KeyType>{}(key);
+    }
+
+    inline auto hash(int key) -> size_t {
+       uint32_t h{ static_cast<uint32_t>(key) };
+
+        h ^= h >> 16;
+        h *= 0x85ebca6b;
+        h ^= h >> 13;
+        h *= 0xc2b2ae35;
+        h ^= h >> 16;
+
+        return h;
+    }
+
+    inline auto hash(std::string_view key) -> size_t {
+        size_t hash{};
+        for (char c : key) {
+            hash = (hash * 31) + c;
+        }
+        return hash;
+    }
+}
+
+export namespace myjunk
+{
+    #pragma region Node based collision storage
+    template <typename KeyType>
+    class NodeSet {
+        using Node = internal::Set_Node<KeyType>;
     
         static constexpr float MAX_LOAD_FACTOR = 0.75f;
         size_t m_bucketCount{};
@@ -50,15 +123,16 @@ export namespace myjunk
     
     public:
     
-        explicit NodeSet(size_t bucket_count = 13)
-         : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()} {}
+        explicit NodeSet(size_t bucket_count = 8)
+         : m_bucketCount{ bucket_count }, m_dataMap{ new Node*[m_bucketCount]()} {}
     
-        explicit NodeSet(std::string_view key, size_t bucket_count = 13)
-         : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()}, m_size{1} {
-            size_t index{ hash(key) % m_bucketCount };
-            m_dataMap[index] = new Node{key};
+        template <typename K>
+        NodeSet(K&& key, size_t bucket_count = 8)
+         : m_bucketCount{ bucket_count }, m_dataMap{ new Node*[m_bucketCount]()}, m_size{1} {
+            size_t index{ get_index(std::forward<K>(key)) };
+            m_dataMap[index] = new Node{ std::forward<K>(key) };
         }
-    
+
         ~NodeSet() {
             for (size_t i{0}; i < m_bucketCount; ++i) {
                 Node* current{ m_dataMap[i] };
@@ -72,7 +146,61 @@ export namespace myjunk
             delete[] m_dataMap;
             m_size = 0;
         }
+
+        NodeSet(const NodeSet& other)
+         : m_bucketCount{ other.m_bucketCount }
+         , m_dataMap{ new Node*[other.m_bucketCount]() }
+         , m_size{ other.m_size } {
+            for (size_t i{0}; i < m_bucketCount; ++i) {
+                if (other.m_dataMap[i]) {
+                    m_dataMap[i] = new Node(*other.m_dataMap[i]);
+
+                    Node* src_current = other.m_dataMap[i]->next;
+                    Node* dest_current = m_dataMap[i];
+
+                    while (src_current) {
+                        dest_current->next = new Node{ *src_current };
+                        dest_current = dest_current->next;
+                        src_current = src_current->next;
+                    }
+                }
+            }
+        }
+
+        NodeSet& operator=(const NodeSet& other) {
+            if (this != &other) {
+                this->~NodeSet();
+
+                new (this) NodeSet(other);
+            }
+            return *this;
+        }
+
+        NodeSet(NodeSet&& other) noexcept {
+            m_bucketCount = other.m_bucketCount;
+            m_dataMap = other.m_dataMap;
+            m_size = other.m_size;
+
+            other.m_dataMap = nullptr;
+            other.m_bucketCount = 0;
+            other.m_size = 0;
+        }
     
+        NodeSet& operator=(NodeSet&& other) noexcept {
+            if (this != &other) {
+                this->~NodeSet();
+
+                m_bucketCount = other.m_bucketCount;
+                m_dataMap = other.m_dataMap;
+                m_size = other.m_size;
+
+                other.m_dataMap = nullptr;
+                other.m_bucketCount = 0;
+                other.m_size = 0;
+            }
+            return *this;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const NodeSet& storage) {
             os << "[ Node Base Set ]\n";
             for (size_t i{0}; i < storage.m_bucketCount; ++i) {
@@ -127,7 +255,7 @@ export namespace myjunk
             delete[] old_data_map;
         }
     
-        auto set(std::string_view key) -> void {
+        auto set(const KeyType& key) -> void {
             size_t index{ get_index(key) };
     
             if (!m_dataMap[index]) {
@@ -149,7 +277,7 @@ export namespace myjunk
             check_and_rehash();
         }
     
-        auto find(std::string_view key) -> std::optional<std::string_view> {
+        auto find(const KeyType& key) -> std::optional<KeyType> {
             size_t index{ get_index(key) };
             Node* current{ m_dataMap[index] };
             while (current) {
@@ -159,7 +287,7 @@ export namespace myjunk
             return std::nullopt;
         }
     
-        auto keys() -> std::vector<std::string_view> {
+        auto keys() -> std::vector<KeyType> {
             std::vector<std::string_view> all_keys;
             for (size_t i{ 0 }; i < m_bucketCount; ++i) {
                 Node* current { m_dataMap[i] };
@@ -173,7 +301,7 @@ export namespace myjunk
     
         bool empty() const { return m_size == 0; }
         size_t size() const { return m_size; }
-        size_t get_index(std::string_view key) const { return hash(key) % m_bucketCount; }
+        size_t get_index(const KeyType& key) const { return internal::hash(key) % m_bucketCount; }
     };
     #pragma endregion
 }

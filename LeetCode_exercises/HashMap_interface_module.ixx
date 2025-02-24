@@ -9,14 +9,14 @@ export module Hash_Map; // Unordered Map
 namespace myjunk::internal
 {
     #pragma region Hash Map Node
-    template <typename Type>
+    template <typename KeyType, typename ValueType>
     struct Hash_Node {
-        std::string key{};
-        Type value{};
+        KeyType key{};
+        ValueType value{};
         Hash_Node* next{nullptr};
     
         Hash_Node() = default;
-        explicit Hash_Node(std::string_view key, const Type& value) : key{key}, value{value}, next{nullptr} {}
+        explicit Hash_Node(const KeyType& key, const ValueType& value) : key{key}, value{value}, next{nullptr} {}
     
         friend std::ostream& operator<<(std::ostream& os, const Hash_Node* node)
         {
@@ -37,6 +37,79 @@ namespace myjunk::internal
         }
     };
 
+    template <typename ValueType>
+    struct Hash_Node<int, ValueType> {
+        int key{};
+        ValueType value{};
+        Hash_Node* next{nullptr};
+    
+        Hash_Node() = default;
+        explicit Hash_Node(int key, const ValueType& value) : key{key}, value{value}, next{nullptr} {}
+    
+        friend std::ostream& operator<<(std::ostream& os, const Hash_Node* node)
+        {
+            if (node == nullptr) {
+                os << "[ address: 0x" << std::hex << 0
+                   << std::dec << ", key: none"
+                   << ", value: none"
+                   << ", next: 0x0 ]";
+                return os;
+            }
+            
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+               << std::dec << ", key: " << node->key
+               << ", value: " << node->value
+               << ", next: 0x" << std::hex << reinterpret_cast<uintptr_t>(node->next)
+               << " ]" << std::dec;
+            return os;
+        }
+    };
+
+    template <typename ValueType>
+    struct Hash_Node<std::string_view, ValueType> {
+        std::string key{};
+        ValueType value{};
+        Hash_Node* next{nullptr};
+    
+        Hash_Node() = default;
+        explicit Hash_Node(std::string_view key, const ValueType& value) : key{key}, value{value}, next{nullptr} {}
+    
+        friend std::ostream& operator<<(std::ostream& os, const Hash_Node* node)
+        {
+            if (node == nullptr) {
+                os << "[ address: 0x" << std::hex << 0
+                   << std::dec << ", key: none"
+                   << ", value: none"
+                   << ", next: 0x0 ]";
+                return os;
+            }
+            
+            os << "[ address: 0x" << std::hex << reinterpret_cast<uintptr_t>(node)
+               << std::dec << ", key: " << node->key
+               << ", value: " << node->value
+               << ", next: 0x" << std::hex << reinterpret_cast<uintptr_t>(node->next)
+               << " ]" << std::dec;
+            return os;
+        }
+    };
+
+    template <typename KeyType>
+    inline auto hash(const KeyType& key) -> size_t {
+        return std::hash<KeyType>{}(key);
+    }
+
+    inline auto hash(int key) -> size_t {
+        uint32_t h{ static_cast<uint32_t>(key) };
+
+        h ^= h >> 16;
+        h *= 0x85ebca6b;
+        h ^= h >> 13;
+        h *= 0xc2b2ae35;
+        h ^= h >> 16;
+
+        return h;
+    }
+
     inline auto hash(std::string_view key) -> size_t {
         size_t hash{};
         for (char c : key) {
@@ -49,9 +122,9 @@ namespace myjunk::internal
 export namespace myjunk
 {
     #pragma region Map Node based collision storage
-    template <typename Type>
+    template <typename KeyType, typename ValueType>
     class NodeMap {
-        using Node = internal::Hash_Node<Type>;
+        using Node = internal::Hash_Node<KeyType, ValueType>;
 
         static constexpr float MAX_LOAD_FACTOR = 0.75f;
         size_t m_bucketCount{};
@@ -63,10 +136,11 @@ export namespace myjunk
         explicit NodeMap(size_t bucket_count = 16)
          : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()} {}
 
-        explicit NodeMap(std::string_view key, const Type& value, size_t bucket_count = 16)
-         : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()}, m_size{1} {
-            size_t index{ get_index(key) };
-            m_dataMap[index] = new Node{key, value};
+        template<typename K>
+        NodeMap(K&& key, ValueType value, size_t bucket_count = 16)
+            : m_bucketCount{bucket_count}, m_dataMap{new Node*[m_bucketCount]()}, m_size{1} {
+            size_t index{get_index(std::forward<K>(key))};
+            m_dataMap[index] = new Node{std::forward<K>(key), std::move(value)};
         }
         
         ~NodeMap() {
@@ -137,7 +211,7 @@ export namespace myjunk
             delete[] old_data_map;
         }
 
-        auto set(std::string_view key, const Type& value) -> void {
+        auto set(const KeyType& key, const ValueType& value) -> void {
             size_t index { get_index(key) };
             
             if (!m_dataMap[index]) {
@@ -161,7 +235,7 @@ export namespace myjunk
             check_and_rehash();
         }
 
-        auto find(std::string_view key) -> Type* {
+        auto find(const KeyType& key) -> ValueType* {
             size_t index{ get_index(key) };
             Node* current{ m_dataMap[index] };
             while (current) {
@@ -171,8 +245,8 @@ export namespace myjunk
             return nullptr;
         }
     
-        auto keys() -> std::vector<std::string_view> {
-            std::vector<std::string_view> all_keys;
+        auto keys() -> std::vector<KeyType> {
+            std::vector<KeyType> all_keys;
             for (size_t i{ 0 }; i < m_bucketCount; ++i) {
                 Node* current{ m_dataMap[i] };
                 while (current) {
@@ -185,13 +259,13 @@ export namespace myjunk
 
         bool empty() const { return m_size == 0; }
         size_t size() const { return m_size; }
-        size_t get_index(std::string_view key) const { return internal::hash(key) % m_bucketCount; }
+        size_t get_index(const KeyType& key) const { return internal::hash(key) % m_bucketCount; }
     };
     #pragma endregion
     #pragma region Multi Map Node based collision storage
-    template <typename Type>
+    template <typename KeyType, typename ValueType>
     class NodeMultiMap {
-        using Node = internal::Hash_Node<Type>;
+        using Node = internal::Hash_Node<KeyType, ValueType>;
     
         static constexpr float MAX_LOAD_FACTOR = 0.75f;
         size_t m_bucketCount{};
@@ -202,11 +276,12 @@ export namespace myjunk
     
         explicit NodeMultiMap(size_t bucket_count = 16)
          : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()} {}
-    
-        explicit NodeMultiMap(std::string_view key, const Type& value, size_t bucket_count = 16)
-         : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()}, m_size{1} {
-            size_t index{ get_index(key) };
-            m_dataMap[index] = new Node{key, value};
+
+        template<typename K>
+        NodeMultiMap(K&& key, ValueType value, size_t bucket_count = 16)
+            : m_bucketCount{bucket_count}, m_dataMap{new Node*[m_bucketCount]()}, m_size{1} {
+            size_t index{ get_index(std::forward<K>(key)) };
+            m_dataMap[index] = new Node{std::forward<K>(key), std::move(value)};
         }
     
         ~NodeMultiMap() {
@@ -282,7 +357,7 @@ export namespace myjunk
             delete[] old_data_map;
         }
     
-        auto set(std::string_view key, const Type& value) -> void {
+        auto set(const KeyType& key, const ValueType& value) -> void {
             size_t index{ get_index(key) };
         
             if (!m_dataMap[index]) {
@@ -303,8 +378,8 @@ export namespace myjunk
             check_and_rehash();
         }
     
-        auto find(std::string_view key) -> std::vector<Type> {
-            std::vector<Type> values;
+        auto find(const KeyType& key) -> std::vector<ValueType> {
+            std::vector<ValueType> values;
             size_t index{ get_index(key) };
             Node* current{ m_dataMap[index] };
             while (current) {
@@ -314,8 +389,8 @@ export namespace myjunk
             return values;
         }
     
-        auto keys() -> std::vector<std::string_view> {
-            std::vector<std::string_view> all_keys;
+        auto keys() -> std::vector<KeyType> {
+            std::vector<KeyType> all_keys;
             for (size_t i{ 0 }; i < m_bucketCount; ++i) {
                 Node* current{ m_dataMap[i] };
                 while (current) {
@@ -328,7 +403,7 @@ export namespace myjunk
     
         bool empty() const { return m_size == 0; }
         size_t size() const { return m_size; }
-        size_t get_index(std::string_view key) const { return internal::hash(key) % m_bucketCount; }
+        size_t get_index(const KeyType& key) const { return internal::hash(key) % m_bucketCount; }
     };
     #pragma endregion
 };

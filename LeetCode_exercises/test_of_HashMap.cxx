@@ -9,10 +9,10 @@ import Test_helpers;
 auto main() -> int
 {
     std::cout << "\n\t\033[1;33m---Test of unordered (Multi) map---\033[0m\n";
-    myjunk::NodeMultiMap<int> empty_int_Multimap;
+    myjunk::NodeMultiMap<std::string_view, int> empty_int_Multimap;
     test_operation("empty_int_Multimap", empty_int_Multimap, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
     
-    myjunk::NodeMultiMap<std::string> string_Multimap{"Container Type", "unordered multi map"};
+    myjunk::NodeMultiMap<std::string_view, std::string> string_Multimap{"Container Type", "unordered multi map"};
     test_operation("string_Multimap", string_Multimap, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
     
     test_operation("string_Multimap", string_Multimap, [](auto& c){ c.set("42", "foo_bar"); });
@@ -41,10 +41,35 @@ auto main() -> int
 
     std::cout << "\n\t\033[1;33m---Test of unordered map---\033[0m\n";
 
-    myjunk::NodeMap<int> empty_int_map;
+    myjunk::NodeMap<std::string_view, int> empty_int_map;
+    empty_int_map.set("git", 42);
     test_operation("empty_int_map", empty_int_map, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
     
-    myjunk::NodeMap<std::string> string_map{"Container Type", "unordered map"};
+    myjunk::NodeMap<int, int> int_map{ 42, 69 };
+    int_map.set(1, 111);
+    int_map.set(2, 111);
+    int_map.set(43, 111);
+    test_operation("int_map", int_map, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
+   
+    myjunk::NodeMap<float, float> float_map{ 4.2f, 6.9f };
+    float_map.set(4.2f, 6.9f);
+    float_map.set(4.3f, 6.9f);
+    float_map.set(5.f, 6.9f);
+    float_map.set(2000.f, 6.9f);
+    float_map.set(2000.2f, 6.9f);
+    test_operation("float_map", float_map, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
+    
+    myjunk::NodeMap<double, std::string> d_s_map{ 42., "69" };
+    d_s_map.set(1.1, "lol");
+    d_s_map.set(1.11, "a");
+    d_s_map.set(111.11, "b");
+    d_s_map.set(1111.11, "asd");
+    d_s_map.set(123.11, "qwe");
+    d_s_map.set(118.11, "zxc");
+    d_s_map.set(2.011, "bbb");
+    test_operation("d_s_map", d_s_map, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
+    
+    myjunk::NodeMap<std::string_view, std::string> string_map{"Container Type", "unordered map"};
     test_operation("string_map", string_map, [](auto& c){ std::cout << "\033[35mSize: " << c.size() << "\033[0m\n"; });
     
     test_operation("string_map", string_map, [](auto& c){ c.set("42", "foo_bar"); });
