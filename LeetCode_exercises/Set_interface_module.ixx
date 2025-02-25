@@ -203,6 +203,7 @@ export namespace myjunk
 
         friend std::ostream& operator<<(std::ostream& os, const NodeSet& storage) {
             os << "[ Node Base Set ]\n";
+            if (storage.size() == 0) return os << "[]";
             for (size_t i{0}; i < storage.m_bucketCount; ++i) {
                 os << "[ Bucket " << i << ": ]";
                 Node* current{ storage.m_dataMap[i] };
@@ -243,7 +244,7 @@ export namespace myjunk
                 while (current) {
                     Node* next{ current->next };
     
-                    set(current->key);
+                    insert(current->key);
     
                     current->next = nullptr;
                     delete current;
@@ -255,7 +256,7 @@ export namespace myjunk
             delete[] old_data_map;
         }
     
-        auto set(const KeyType& key) -> void {
+        auto insert(const KeyType& key) -> void {
             size_t index{ get_index(key) };
     
             if (!m_dataMap[index]) {
@@ -266,10 +267,11 @@ export namespace myjunk
             }
     
             Node* current{ m_dataMap[index] };
+            if (current->key == key) return;
     
             while (current->next) {
-                if (current->key == key) return;
                 current = current->next;
+                if (current->key == key) return;
             }
     
             current->next = new Node(key);
@@ -277,14 +279,41 @@ export namespace myjunk
             check_and_rehash();
         }
     
-        auto find(const KeyType& key) -> std::optional<KeyType> {
+        auto find(const KeyType& key) -> KeyType* {
             size_t index{ get_index(key) };
             Node* current{ m_dataMap[index] };
             while (current) {
-                if (current->key == key) return current->key;
+                if (current->key == key) return &current->key;
                 current = current->next;
             }
-            return std::nullopt;
+            return nullptr;
+        }
+
+        auto erase(const KeyType& key) -> bool {
+            size_t index{ get_index(key) };
+
+            if (!m_dataMap[index]) return false;
+
+            
+            Node* current{ m_dataMap[index] };
+            if (current->key == key) {
+                m_dataMap[index] = current->next;
+                delete current;
+                --m_size;
+                return true;
+            }
+
+            while (current->next) {
+                if (current->next->key == key) {
+                    Node* to_delete{ current->next };
+                    current->next = to_delete->next;
+                    delete to_delete;
+                    --m_size;
+                    return true;
+                }
+                current = current->next;
+            }
+            return false;
         }
     
         auto keys() -> std::vector<KeyType> {
@@ -302,6 +331,9 @@ export namespace myjunk
         bool empty() const { return m_size == 0; }
         size_t size() const { return m_size; }
         size_t get_index(const KeyType& key) const { return internal::hash(key) % m_bucketCount; }
+        
+        size_t getBucketCount() const { return m_bucketCount; }
+        const Node* getBucketHead(size_t bucket) const { return m_dataMap[bucket]; }
     };
     #pragma endregion
 }

@@ -132,6 +132,7 @@ export namespace myjunk
         size_t m_size{0};
 
     public:
+        using MapNode = internal::Hash_Node<KeyType, ValueType>;
         
         explicit NodeMap(size_t bucket_count = 16)
          : m_bucketCount{bucket_count}, m_dataMap{ new Node*[m_bucketCount]()} {}
@@ -157,8 +158,63 @@ export namespace myjunk
             m_size = 0;
         }
 
+        NodeMap(const NodeMap& other)
+         : m_bucketCount{ other.m_bucketCount }
+         , m_dataMap{ new Node*[other.m_bucketCount]() }
+         , m_size{ other.m_size } {
+            for (size_t i{0}; i < m_bucketCount; ++i) {
+                if (other.m_dataMap[i]) {
+                    m_dataMap[i] = new Node(*other.m_dataMap[i]);
+
+                    Node* src_current = other.m_dataMap[i]->next;
+                    Node* dest_current = m_dataMap[i];
+
+                    while (src_current) {
+                        dest_current->next = new Node{ *src_current };
+                        dest_current = dest_current->next;
+                        src_current = src_current->next;
+                    }
+                }
+            }
+        }
+
+        NodeMap& operator=(const NodeMap& other) {
+            if (this != &other) {
+                this->~NodeMap();
+
+                new (this) NodeMap(other);
+            }
+            return *this;
+        }
+
+        NodeMap(NodeMap&& other) {
+            m_bucketCount = other.m_bucketCount;
+            m_dataMap = other.m_dataMap;
+            m_size = other.m_size;
+
+            other.m_dataMap = nullptr;
+            other.m_bucketCount = 0;
+            other.m_size = 0;
+        }
+
+        NodeMap& operator=(NodeMap&& other) noexcept {
+            if (this != &other) {
+                this->~NodeMap();
+
+                m_bucketCount = other.m_bucketCount;
+                m_dataMap = other.m_dataMap;
+                m_size = other.m_size;
+
+                other.m_dataMap = nullptr;
+                other.m_bucketCount = 0;
+                other.m_size = 0;
+            }
+            return *this;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const NodeMap& storage) {
             os << "[ Node Base Hash Map (Unordered Map) ]\n";
+            if (storage.size() == 0) return os << "[]";
             for (size_t i{0}; i < storage.m_bucketCount; ++i) {
                 os << "[ Bucket " << i << ": ]";
                 Node* current{ storage.m_dataMap[i] };
@@ -199,7 +255,7 @@ export namespace myjunk
                 while (current) {
                     Node* next{ current->next };
 
-                    set(current->key, current->value);
+                    insert(current->key, current->value);
 
                     current->next = nullptr;
                     delete current;
@@ -211,7 +267,7 @@ export namespace myjunk
             delete[] old_data_map;
         }
 
-        auto set(const KeyType& key, const ValueType& value) -> void {
+        auto insert(const KeyType& key, const ValueType& value = ValueType{}) -> void {
             size_t index { get_index(key) };
             
             if (!m_dataMap[index]) {
@@ -222,17 +278,49 @@ export namespace myjunk
             }
 
             Node* current{ m_dataMap[index] };
-            while (current->next) {
+            
+            while (current) {
                 if (current->key == key) {
                     current->value = value;
                     return;
                 }
+
+                if (!current->next) break;
                 current = current->next;
             }
 
             current->next = new Node(key, value);
             ++m_size;
             check_and_rehash();
+        }
+
+        auto erase(const KeyType& key) -> bool {
+            size_t index{ get_index(key) };
+
+            if (!m_dataMap[index]) return false;
+
+            Node* current{ m_dataMap[index] };
+            if (current->key == key) {
+                m_dataMap[index] = m_dataMap[index]->next;
+                current->next = nullptr;
+                current->value = ValueType{};
+                delete current;
+                --m_size;
+                return true;
+            }
+
+            while (current->next) {
+                if (current->next->key == key) {
+                    Node* to_delete{ current->next };
+                    current->next = to_delete->next;
+                    delete to_delete;
+                    --m_size;
+                    return true;
+                }
+                current = current->next;
+            }
+
+            return false;
         }
 
         auto find(const KeyType& key) -> ValueType* {
@@ -260,6 +348,9 @@ export namespace myjunk
         bool empty() const { return m_size == 0; }
         size_t size() const { return m_size; }
         size_t get_index(const KeyType& key) const { return internal::hash(key) % m_bucketCount; }
+
+        size_t getBucketCount() const { return m_bucketCount; }
+        const MapNode* getBucketHead(size_t bucket) const { return m_dataMap[bucket]; }
     };
     #pragma endregion
     #pragma region Multi Map Node based collision storage
@@ -298,8 +389,63 @@ export namespace myjunk
             m_size = 0;
         }
     
+        NodeMultiMap(const NodeMultiMap& other)
+         : m_bucketCount{ other.m_bucketCount }
+         , m_dataMap{ new Node*[other.m_bucketCount]() }
+         , m_size{ other.m_size } {
+            for (size_t i{0}; i < m_bucketCount; ++i) {
+                if (other.m_dataMap[i]) {
+                    m_dataMap[i] = new Node(*other.m_dataMap[i]);
+
+                    Node* src_current = other.m_dataMap[i]->next;
+                    Node* dest_current = m_dataMap[i];
+
+                    while (src_current) {
+                        dest_current->next = new Node{ *src_current };
+                        dest_current = dest_current->next;
+                        src_current = src_current->next;
+                    }
+                }
+            }
+        }
+
+        NodeMultiMap& operator=(const NodeMultiMap& other) {
+            if (this != &other) {
+                this->~NodeMultiMap();
+
+                new (this) NodeMultiMap(other);
+            }
+            return *this;
+        }
+
+        NodeMultiMap(NodeMultiMap&& other) {
+            m_bucketCount = other.m_bucketCount;
+            m_dataMap = other.m_dataMap;
+            m_size = other.m_size;
+
+            other.m_dataMap = nullptr;
+            other.m_bucketCount = 0;
+            other.m_size = 0;
+        }
+
+        NodeMultiMap& operator=(NodeMultiMap&& other) noexcept {
+            if (this != &other) {
+                this->~NodeMultiMap();
+
+                m_bucketCount = other.m_bucketCount;
+                m_dataMap = other.m_dataMap;
+                m_size = other.m_size;
+
+                other.m_dataMap = nullptr;
+                other.m_bucketCount = 0;
+                other.m_size = 0;
+            }
+            return *this;
+        }
+
         friend std::ostream& operator<<(std::ostream& os, const NodeMultiMap& storage) {
             os << "[ Node Base Hash Map (Unordered Multi Map) ]\n";
+            if (storage.size() == 0) return os << "[]";
             for (size_t i{0}; i < storage.m_bucketCount; ++i) {
                 os << "[ Bucket " << i << ": ]";
                 Node* current{ storage.m_dataMap[i] };
@@ -337,14 +483,14 @@ export namespace myjunk
             m_dataMap = new Node*[m_bucketCount]();
             m_size = 0;
     
-            // iterate over old map and set old map values in new map
+            // iterate over old map and insert old map values in new map
             for (size_t i{0}; i < old_bucket_count; ++i) {
                 Node* current{ old_data_map[i] };
                 while (current) {
                     Node* next{ current->next };
                     
                     // Re-hash and insert the node
-                    set(current->key, current->value);
+                    insert(current->key, current->value);
                     
                     // Delete the old node
                     current->next = nullptr;
@@ -357,7 +503,7 @@ export namespace myjunk
             delete[] old_data_map;
         }
     
-        auto set(const KeyType& key, const ValueType& value) -> void {
+        auto insert(const KeyType& key, const ValueType& value) -> void {
             size_t index{ get_index(key) };
         
             if (!m_dataMap[index]) {
