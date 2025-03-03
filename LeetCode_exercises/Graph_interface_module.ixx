@@ -51,7 +51,8 @@ export namespace myjunk
             auto vert{ adjacency_list.find(vertex) };
             if (!vert) return false;
 
-            auto keys = vert->keys(); // keys are all the connecting edges to vert
+            // keys are all the connecting edges to vert from other vert we stored other vert name here
+            auto keys = vert->keys();
             for(auto& key : keys) {
                 if (auto vert_to_rm_edge{ adjacency_list.find(key) }) {
                     auto edge_rem_res{ vert_to_rm_edge->erase(vertex) };

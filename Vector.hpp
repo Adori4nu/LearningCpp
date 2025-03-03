@@ -148,7 +148,7 @@ void Vector<T>::PushBack(const T& value)
         ReAlloc(m_Capacity + m_Capacity / 2);
     }
 
-    m_Data[m_Size] = value;
+    new(m_Data + m_Size) T(value);
     m_Size++;
 }
 
@@ -160,7 +160,7 @@ void Vector<T>::PushBack(T&& value)
         ReAlloc(m_Capacity + m_Capacity / 2);
     }
 
-    m_Data[m_Size] = std::move(value);
+    new(m_Data + m_Size) T(std::move(value));
     m_Size++;
 }
 
@@ -174,7 +174,7 @@ T& Vector<T>::EmplaceBack(Args&&... args)
     // new()
     // std::construct_at(&m_Data[m_Size], T(std::forward<Args>(args)...)); // C++20
     // new(&m_Data[m_Size]) T(std::forward<Args>(args)...); // << no need for that we can add size_t to m_Data which is a pointer to move length of x values on our memory block
-    new(m_Data + m_Size) T(std::forward<Args>(args)...); // placment new creates object directry at memory m_Data[m_Size] no moving and destroing
+    new(m_Data + m_Size) T(std::forward<Args>(args)...); // placment new creates object directly at memory m_Data[m_Size] no moving and destroing
     // m_Data[m_Size] = T(std::forward<Args>(args)...); // it is still moveing and destroing temporary
     return m_Data[m_Size++];
 }
