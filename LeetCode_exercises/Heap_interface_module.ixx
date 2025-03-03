@@ -29,6 +29,31 @@ export namespace my_junk
                 index = parrent(index);
             }
         }
+
+        auto heapify_down(size_t index) -> void {
+            size_t max_index{ index };
+            
+            while (true) {
+                size_t left_index{ left_child(index) };
+                size_t right_index{ right_child(index) };
+
+                if (left_index < m_heap.size() && m_heap[left_index] > m_heap[max_index]) {
+                    max_index = left_index;
+                }
+
+                if (right_index < m_heap.size() && m_heap[right_index] > m_heap[max_index]) {
+                    max_index = right_index;
+                }
+
+                if (max_index != index) {
+                    swap(index, max_index);
+                    index = max_index;
+                } else {
+                    return;
+                }
+            }
+            
+        }
         
     public:
         
@@ -52,6 +77,24 @@ export namespace my_junk
         auto emplace(Args&&... args) -> void {
             m_heap.EmplaceBack(std::forward<Args>(args)...);
             heapify_up(size() - 1);
+        }
+
+        auto remove() -> Type {
+            if (m_heap.empty()) {
+                return Type{};
+            }
+
+            Type return_value{ m_heap.front() };
+
+            if (m_heap.size() == 1) {
+                m_heap.PopBack();
+            } else {
+                m_heap[0] = m_heap.back();
+                m_heap.PopBack();
+                heapify_down(0);
+            }
+
+            return return_value;
         }
 
         auto size() const -> const size_t { return m_heap.Size(); }

@@ -2,6 +2,7 @@
 #define COMPILE_DEBUG_MODE 1
 #if COMPILE_DEBUG_MODE > 0
 #include <stdexcept>
+#include <cassert>
 #endif
 // #include <memory> // C++20
 
@@ -116,6 +117,31 @@ public:
 
     const T& operator[](size_t index) const;
     T& operator[](size_t index) { return m_Data[index]; };
+
+    const T& front() const { 
+    #if COMPILE_DEBUG_MODE > 0
+        assert(m_Size > 0 && "Cannot call front() on empty vector");
+    #endif
+        return *begin();
+    }
+    T& front() {  // or
+    #if COMPILE_DEBUG_MODE > 0
+        assert(m_Size > 0 && "Cannot call front() on empty vector");
+    #endif
+        return m_Data[0]; 
+    }
+    const T& back() const { 
+    #if COMPILE_DEBUG_MODE > 0
+        assert(m_Size > 0 && "Cannot call front() on empty vector");
+    #endif
+        return *(end() - 1);
+    }
+    T& back() {  // or
+    #if COMPILE_DEBUG_MODE > 0
+        assert(m_Size > 0 && "Cannot call front() on empty vector");
+    #endif
+        return m_Data[m_Size - 1]; 
+    }
 };
 
 template<typename T>
