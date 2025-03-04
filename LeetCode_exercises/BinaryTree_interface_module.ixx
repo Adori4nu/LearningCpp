@@ -121,5 +121,32 @@ public:
         }
         return false;
     }
+
+private:
+
+    auto r_contains(Node* current_node, const Type& value) -> bool {
+        if (current_node == nullptr) return false;
+
+        if (current_node->value == value) return true;
+
+        if(current_node->value < value) 
+            return r_contains(current_node->right, value);
+        else 
+            return r_contains(current_node->left, value);
+    }
+
+    auto r_insert(Node* current_node, const Type& value) -> Node* {
+        return Node*{};
+    }
+
+public:
+
+    auto r_contains(const Type& value) -> bool {
+        return r_contains(m_root, value);
+    }
+
+    auto r_insert(const Type& value) -> void {
+        r_insert(m_root, value);
+    }
 };
 #pragma endregion
