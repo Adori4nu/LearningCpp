@@ -24,4 +24,9 @@ auto main() -> int
     std::cout << "\033[34m--- test ---\nString_tree contains: " << "Nananananananana Batman!" << "\033[0m\n";
     std::cout << (string_tree.contains("Nananananananana Batman!") ? "\033[1;32mTrue" : "\033[1;31mFalse") 
     << "\033[0m\n";
+    TreeNodeBase<float> floating_tree;
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(2.1f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(1.2f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(3.3f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(3.3f); });
 }

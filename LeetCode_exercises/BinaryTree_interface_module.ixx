@@ -136,7 +136,15 @@ private:
     }
 
     auto r_insert(Node* current_node, const Type& value) -> Node* {
-        return Node*{};
+        if (!current_node) return new Node{ value };
+
+        if (current_node->value > value) {
+            current_node->left = r_insert(current_node->left, value);
+        } else if (current_node->value < value) {
+            current_node->right = r_insert(current_node->right, value);
+        }
+
+        return current_node;
     }
 
 public:
@@ -146,6 +154,7 @@ public:
     }
 
     auto r_insert(const Type& value) -> void {
+        if (!m_root) m_root = new Node{ value };
         r_insert(m_root, value);
     }
 };
