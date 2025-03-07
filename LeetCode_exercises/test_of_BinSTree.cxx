@@ -29,4 +29,23 @@ auto main() -> int
     test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(1.2f); });
     test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(3.3f); });
     test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(3.3f); });
+
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(4.3f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(5.1f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(0.3f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(2.6f); });
+    test_operation("floating_tree", floating_tree, [](auto& c){ c.insert(1.7f); });
+    
+    std::cout << "\n\033[1;36m[BFS]\t\t";
+    floating_tree.bfs();
+    std::cout << "\033[0m";
+    std::cout << "\n\033[1;35m[DFS PreOrder]  ";
+    floating_tree.dfs_pre_order();
+    std::cout << "\033[0m\n";
+    std::cout << "\n\033[1;32m[DFS PostOrder] ";
+    floating_tree.dfs_post_order();
+    std::cout << "\033[0m\n";
+    std::cout << "\n\033[1;31m[DFS InOrder]\t";
+    floating_tree.dfs_in_order();
+    std::cout << "\033[0m\n\n";
 }
