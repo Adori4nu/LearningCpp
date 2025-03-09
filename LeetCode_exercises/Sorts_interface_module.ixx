@@ -61,4 +61,85 @@ export namespace my_junk
         }
     }
     #pragma endregion
+}
+namespace my_junk::details
+{
+    #pragma region Merge Impl
+    template <typename T>
+    auto merge(Vector<T>& container
+            , typename Vector<T>::Iterator begin
+            , typename Vector<T>::Iterator mid
+            , typename Vector<T>::Iterator end) -> void {
+        
+            size_t left_size{ size_t(mid - begin) };
+            size_t right_size{ size_t(end - mid) };
+
+            Vector<T> left_subvec;
+            Vector<T> right_subvec;
+
+            auto it{ begin };
+            for (size_t i{0}; i < left_size; ++i) {
+                left_subvec.PushBack(*it);
+                ++it;
+            }
+
+            for (size_t i {0}; i < right_size; ++i) {
+                right_subvec.PushBack(*it);
+                ++it;
+            }
+
+            size_t left_index{0};
+            size_t right_index{0};
+            it = begin;
+
+            while (left_index < left_size && right_index < right_size) {
+                if (left_subvec[left_index] <= right_subvec[right_index]) {
+                    *it = std::move(left_subvec[left_index]);
+                    ++left_index;
+                } else {
+                    *it = std::move(right_subvec[right_index]);
+                    ++right_index;
+                }
+                ++it;
+            }
+
+            while (left_index < left_size) {
+                *it = std::move(left_subvec[left_index]);
+                ++left_index;
+                ++it;
+            }
+
+            while (right_index < right_size) {
+                *it = std::move(right_subvec[right_index]);
+                ++right_index;
+                ++it;
+            }
+    }
+
+    template <typename T>
+    auto merge_sort_impl(Vector<T>& container
+                , typename Vector<T>::Iterator begin
+                , typename Vector<T>::Iterator end) -> void {
+        
+        if (end - begin <= 1) {
+            return;
+        }
+
+        auto mid{ begin + ((end - begin) / 2) };
+
+        merge_sort_impl(container, begin, mid);
+        merge_sort_impl(container, mid, end);
+
+        merge(container, begin, mid, end);
+    }
+    #pragma endregion
+} // namespace my_junk::details
+export namespace my_junk
+{
+    #pragma region Merge Sort
+    template <typename T>
+    auto merge_sort(Vector<T>& container) -> void {
+        details::merge_sort_impl(container, container.begin(), container.end());
+    }
+    #pragma endregion
 } // namespace my_junk

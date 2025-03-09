@@ -43,6 +43,14 @@ public:
         return iterator;
     }
 
+    std::ptrdiff_t operator-(const VectorIterator& other) const {
+        return m_Ptr - other.m_Ptr;
+    }
+
+    VectorIterator operator+(int n) const {
+        return VectorIterator(m_Ptr + n);
+    }
+
     ReferenceType operator[](int index)
     {
         return *(m_Ptr + index);
