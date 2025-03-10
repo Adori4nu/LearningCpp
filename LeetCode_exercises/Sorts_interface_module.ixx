@@ -42,6 +42,7 @@ export namespace my_junk
     }
     #pragma endregion
     #pragma region Insertion Sort
+    // n^2 generaly but when data is sorted it is O(n)
     template <typename T>
     auto insertion_sort(Vector<T>& container) -> void {
         for (size_t i{1}; i < container.Size(); ++i) {

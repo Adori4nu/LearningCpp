@@ -17,15 +17,15 @@ auto factorial(int n) -> uint64_t {
 
 auto main(int argc, char* argv[]) -> int
 {
-    // if (argc != 2) 
-    // {
-    //     std::cerr << std::format("\033[1;36mUsage: {} <positive_integer>\033[0m\n", argv[0]);
-    //     return 1;
-    // }
+    if (argc != 2) 
+    {
+        std::cerr << std::format("\033[1;36mUsage: {} <positive_integer>\033[0m\n", argv[0]);
+        return 1;
+    }
 
     try 
     {
-        int n{ /*std::stoi(argv[1])*/ 21 };
+        int n{ std::stoi(argv[1]) };
 
         if (n < 0) {
             std::cerr << "\033[1;31mError: Please enter a non-negative integer.\033[0m\n";
