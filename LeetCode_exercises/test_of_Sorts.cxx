@@ -105,4 +105,31 @@ auto main() -> int
             std::cout << "\033[1;31m"<< my_vec[i] << "\033[0m ";
     }
     std::cout << "\n\n";
+
+    std::println("\033[1;33m--- [Quick sort] ---\033[0m");
+    my_vec[0] = 3;
+    my_vec[1] = 6;
+    my_vec[2] = 4;
+    my_vec[3] = 2;
+    my_vec[4] = 1;
+    my_vec[5] = 5;
+    my_vec[6] = 9;
+    my_vec[7] = 8;
+    my_vec[8] = 7;
+    std::cout << "\033[34mBefore sorting:\033[0m ";
+    for (const auto& val : my_vec)
+    {
+        std::cout << val << " ";
+    }
+    std::cout << "\n\n";
+    my_junk::quick_sort(my_vec);
+    std::cout << "\n\033[35mAfter sorting: \033[0m ";
+    for (size_t i{0}; i < my_vec.Size(); ++i)
+    {
+        if (my_vec[i] == int(i) + 1)
+            std::cout << "\033[32m"<< my_vec[i] << "\033[0m ";
+        else if (my_vec[i] != int(i) + 1)
+            std::cout << "\033[1;31m"<< my_vec[i] << "\033[0m ";
+    }
+    std::cout << "\n\n";
 }

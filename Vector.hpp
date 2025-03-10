@@ -50,6 +50,10 @@ public:
     VectorIterator operator+(int n) const {
         return VectorIterator(m_Ptr + n);
     }
+    
+    VectorIterator operator-(int n) const {
+        return VectorIterator(m_Ptr - n);
+    }
 
     ReferenceType operator[](int index)
     {
@@ -76,6 +80,26 @@ public:
         return !(*this == other);
     }
 
+    bool operator<(const VectorIterator& other) const
+    {
+        return m_Ptr < other.m_Ptr;
+    }
+    
+    bool operator>(const VectorIterator& other) const
+    {
+        return m_Ptr > other.m_Ptr;
+    }
+
+    bool operator<=(const VectorIterator& other) const
+    {
+        return m_Ptr <= other.m_Ptr;
+    }
+
+    bool operator>=(const VectorIterator& other) const
+    {
+        return m_Ptr >= other.m_Ptr;
+    }
+    
 private:
     PointerType m_Ptr;
 

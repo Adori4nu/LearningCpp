@@ -1,6 +1,7 @@
 module;
 
 #include <utility>
+#include <print>
 #include "../Vector.hpp"
 
 export module Sorts;
@@ -116,6 +117,13 @@ namespace my_junk::details
             }
     }
 
+    // cuts the vector in halves until it gets to
+    // 1 element sub vectors then it exit's recursive
+    // merge_sort_impls and percide to merge function
+    // that is reinserting elements from lowest to higest
+    // to 2 element sub vectors then again exits and
+    // reinserts in order to biger vec
+    // until it mergese everything back
     template <typename T>
     auto merge_sort_impl(Vector<T>& container
                 , typename Vector<T>::Iterator begin
@@ -125,7 +133,7 @@ namespace my_junk::details
             return;
         }
 
-        auto mid{ begin + ((end - begin) / 2) };
+        auto mid{ begin + (end - begin) / 2 };
 
         merge_sort_impl(container, begin, mid);
         merge_sort_impl(container, mid, end);
@@ -140,6 +148,66 @@ export namespace my_junk
     template <typename T>
     auto merge_sort(Vector<T>& container) -> void {
         details::merge_sort_impl(container, container.begin(), container.end());
+    }
+    #pragma endregion
+} // namespace my_junk
+namespace my_junk::details
+{
+    #pragma region Pivot and Swap
+    template <typename T>
+    auto swap(T& first, T& second) -> void {
+        T temp{ std::move(first) };
+        first = std::move(second);
+        second = std::move(temp);
+    }
+
+    template <typename T>
+    auto partition(Vector<T>& container, typename Vector<T>::Iterator start, 
+        typename Vector<T>::Iterator end) -> typename Vector<T>::Iterator {
+        T pivot_value{ *start };
+        auto swap_pos = start;
+        // iterate through all elements except the pivot one
+        for (auto current{ start + 1 }; current <= end; ++current) {
+            if (*current < pivot_value) {
+                ++swap_pos;
+                if (swap_pos != current) {
+                    std::println("Swapping: {} with {}", *swap_pos, *current);
+                    swap(*swap_pos, *current);
+                }
+            }
+        }
+        if (start != swap_pos) {
+            std::println("Swapping: pivot {} with {}", *start, *swap_pos);
+            swap(*start, *swap_pos);
+        }
+
+        return swap_pos;
+    }
+
+    template <typename T>
+    auto quick_sort_impl(Vector<T>& container, typename Vector<T>::Iterator start
+            , typename Vector<T>::Iterator end) -> void {
+        if ((end - start) < 1) return;
+        
+        auto pivot_position{ partition(container, start, end) };
+
+        // Sort elements before and after pivot
+        quick_sort_impl(container, start, pivot_position - 1);
+        quick_sort_impl(container, pivot_position + 1, end);
+    }
+    #pragma endregion
+} // namespace my_junk::details
+
+export namespace my_junk
+{
+    #pragma region Quick Sort
+    template <typename T>
+    auto quick_sort(Vector<T>& container) -> void {
+        if (container.Size() <= 1) {
+            return;
+        }
+
+        details::quick_sort_impl(container, container.begin(), container.end() - 1);
     }
     #pragma endregion
 } // namespace my_junk
