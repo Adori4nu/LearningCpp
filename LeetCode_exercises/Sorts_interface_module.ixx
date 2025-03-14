@@ -11,6 +11,7 @@ export namespace my_junk
     #pragma region Bubble Sort
     template <typename T>
     auto bubble_sort(Vector<T>& container) -> void {
+        if (container.Size() <= 1) return;
         for (size_t i{container.Size() - 1}; i > 0; --i) {
             for (size_t j{0}; j < i; ++j) {
                 if (container[j] > container[j+1]) {
@@ -26,6 +27,7 @@ export namespace my_junk
     #pragma region Selection Sort
     template <typename T>
     auto selection_sort(Vector<T>& container) -> void {
+        if (container.Size() <= 1) return;
         for (size_t i{0}; i < container.Size() - 1; ++i) {
             size_t min_index{i};
             for (size_t j{i+1}; j < container.Size(); ++j) {
@@ -45,6 +47,7 @@ export namespace my_junk
     // n^2 generaly but when data is sorted it is O(n)
     template <typename T>
     auto insertion_sort(Vector<T>& container) -> void {
+        if (container.Size() <= 1) return;
         for (size_t i{1}; i < container.Size(); ++i) {
             // picking up the key
             T key{ std::move(container[i]) };

@@ -110,6 +110,7 @@ public:
                 current = current->right;
             }
         }
+        delete new_node;
         return false;
     }
 
