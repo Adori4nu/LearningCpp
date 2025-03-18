@@ -75,8 +75,8 @@ public:
         os << ")";
     }
 
-    bool empty() { return m_size == 0; }
-    size_t size() { return m_size; }
+    bool empty() const { return m_size == 0; }
+    size_t size() const { return m_size; }
 
     auto insert(const Type& value) -> bool {
         Node* new_node{ new Node(value) };
@@ -171,10 +171,12 @@ private:
             } else if (!current_node->left) {
                 Node* temp{ current_node->right };
                 delete current_node;
+                --m_size;
                 return temp;
             } else if (!current_node->right) {
                 Node* temp{ current_node->left };
                 delete current_node;
+                --m_size;
                 return temp;
             } else {
                 Type sub_tree_min{ min_val(current_node->right) };

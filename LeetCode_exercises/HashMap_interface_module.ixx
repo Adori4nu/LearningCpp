@@ -385,7 +385,7 @@ export namespace myjunk
                 }
             }
             delete[] m_dataMap;
-            m_dataMap= nullptr;
+            m_dataMap = nullptr;
             m_size = 0;
         }
     

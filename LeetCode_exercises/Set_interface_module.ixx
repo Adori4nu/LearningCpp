@@ -249,7 +249,7 @@ export namespace myjunk
                     current->next = nullptr;
                     delete current;
     
-                    current = current->next;
+                    current = next;
                 }
             }
     
