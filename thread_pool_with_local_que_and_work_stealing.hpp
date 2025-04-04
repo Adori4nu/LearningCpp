@@ -82,7 +82,7 @@ class thread_pool_stealing
         local_work_queue = queues[my_index].get();
         while (!done)
         {
-            run_penging_task();
+            run_pending_task();
         }
     }
 
@@ -153,7 +153,7 @@ public:
         return res;
     }
 
-    void run_penging_task()
+    void run_pending_task()
     {
         task_type task;
         if (pop_task_from_local_queue(task) || 

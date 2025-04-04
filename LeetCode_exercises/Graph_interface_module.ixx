@@ -21,7 +21,7 @@ export namespace myjunk
         
         auto addVertex(const NodeValueType& vertex) -> bool {
             if (!adjacency_list.find(vertex)) { // std::map .count(vertex) == 0
-                adjacency_list.insert(vertex); // std::map [vertex] like an array for example
+                adjacency_list.insert(vertex); // std::map adjacency_list[vertex] like an array for example creates key with empty val
                 return true;
             }
             return false;
