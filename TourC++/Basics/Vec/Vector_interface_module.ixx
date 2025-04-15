@@ -193,14 +193,18 @@ constexpr Error_action default_Error_action = Error_action::logging;
 
 enum class Error_code { range_error, length_error };
 
-std::string error_code_name[] { "range error", "length error" };
+// std::string error_code_name[] { "range error", "length error" };
+const char* error_code_name[] = { "range error", "length error" };
 
 template<Error_action action = default_Error_action, class C>
 constexpr void expect(C cond, Error_code x)
 {
     if constexpr (action == Error_action::logging)
-        if (!cond()) std::cerr << "expect() failure: " << int(x) << ' '
-         << error_code_name[int(x)] << '\n';
+        if (!cond()) {
+            const char* names[] = { "range error", "length error" };
+            std::cerr << "expect() failure: " << int(x) << ' ' 
+                      << names[int(x)] << '\n';
+        }
     if constexpr (action == Error_action::throwing)
         if (!cond()) throw x;
     if constexpr (action == Error_action::terminating)
@@ -214,8 +218,8 @@ class Vector{
     size_t sz;
 
 public:
-    Vector(size_t size) : elem{new T[size]}, sz{size}
-    Vecotr(std::initializer_list<T>);
+    Vector(size_t size);
+    Vector(std::initializer_list<T>);
     ~Vector() { delete[] elem; }
     T& operator[](size_t i);
     size_t size() { return sz; }
@@ -225,19 +229,20 @@ public:
 export template<typename T>
 Vector<T>::Vector(size_t size) : elem{new T[size]}, sz{size}
 {
-    // if (size < 0)
-    //     throw std::length_error{"konstruktor klasy Vector: ujemny rozmiar.\n"};
+    if (size < 0)
+        throw std::length_error{"konstruktor klasy Vector: ujemny rozmiar.\n"};
 
-    for (size_t i{ 0 }; i != s; ++i)
+    for (size_t i{ 0 }; i != size; ++i)
     {
         elem[i] = T();
     }
 }
 
 export template<typename T>
-Vector<T>::Vector(std::initializer_list<T>)
+Vector<T>::Vector(std::initializer_list<T> lst)
+ : elem{ new T[lst.size()] }, sz{ static_cast<size_t>(lst.size()) }
 {
-
+    std::copy(lst.begin(), lst.end(), elem);
 }
 
 export template<typename T>
@@ -261,7 +266,13 @@ bool operator==(const Vector<T>& v1, const Vector<T>& v2)
 export template<typename T>
 void Vector<T>::push_back(T value)
 {
-
+    T* new_elem{ new T[sz + 1] };
+    for (size_t i{}; i < sz; ++i)
+        new_elem[i] = elem[i];
+    new_elem[sz] = value;
+    delete[] elem;
+    elem = new_elem;
+    ++sz;
 }
 
 export template<typename T>
@@ -286,10 +297,17 @@ void read_and_sum(T& result, size_t s)
         result += v[i];
 }
 
-export template<typename T>
-Vector<T> read(std::istream& is)
-{
-    Vector<T> vec;
+export namespace vec_utils {
+    template<typename T>
+    Vector<T> read(std::istream& is)
+    {
+        Vector<T> vec(0);
+        for (T t; is>>t; )
+            vec.push_back(t);
+        is.clear();
+        is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+        return vec;
+    }
 }
 #pragma endregion
 #endif

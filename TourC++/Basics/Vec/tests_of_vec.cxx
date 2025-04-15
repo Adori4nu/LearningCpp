@@ -12,9 +12,9 @@ import Vector;
 
     void fct(size_t n)
     {
-        Vector v(n);
+        Vector<int> v(n);
         {
-            Vector v2(n * 2);
+            Vector<int> v2(n * 2);
         }
     }
 
@@ -48,8 +48,16 @@ int main()
 #if VEC_IMP == 52
 
     std::cout << "Podrozdział 5" << std::endl;
-    Vector gv(10);
-    std::cout << "Sum of input: " << sum_of_vec << std::endl;
+    Vector<int> gv(10);
+    Vector<int>* gp = new Vector<int>(100);
+    fct(5);
+    delete gp;
+    // std::cout << "Sum of input: " << sum_of_vec << std::endl;
+    std::cout << "Input vec<int> values: ";
+    Vector<int> v = vec_utils::read<int>(std::cin); // something is crashing
+    std::cout << "\nvec<int> values: ";
+    for (size_t s{}; s < v.size(); ++s)
+        std::cout << v[s] << "\t";
 
 #endif
     std::cin.get();
