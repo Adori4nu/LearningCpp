@@ -4,6 +4,7 @@ module;
 
 export module GameMath;
 
+#pragma region Chapter 1
 template <typename T>
     requires std::floating_point<T>
 struct Vector3D
@@ -85,3 +86,54 @@ inline Vector3D Normalize(const Vector3D& v)
 {
     return (v / Magnitude(v));
 }
+
+template <typename T>
+    requires std::floating_point<T>
+struct Matrix3D
+{
+private:
+
+    T n[3][3];
+
+public:
+
+    Matrix3D() = default;
+    
+    Matrix3D(T n00, T n01, T n02
+            , T n10, T n11, T n12
+            , T n20, T n21, T n22)
+    {
+        n[0][0] = n00; n[0][1] = n01; n[0][2] = n02;
+        n[1][0] = n10; n[1][1] = n11; n[1][2] = n12;
+        n[2][0] = n20; n[2][1] = n21; n[2][2] = n22;
+    }
+
+    Martix3D(const Vector3D& a, const Vector3D& b, const Vector3D& c)
+    {
+        n[0][0] = a.x; n[0][1] = a.y; n[0][2] = a.z;
+        n[1][0] = b.x; n[1][1] = b.y; n[1][2] = b.z;
+        n[2][0] = c.x; n[2][1] = c.y; n[2][2] = c.z;
+    }
+
+    T& operator ()(size_t i, size_t j)
+    {
+        return (n[j][i]);
+    }
+
+    const T& operator ()(size_t i, size_t j) const
+    {
+        return (n[j][i]);
+    }
+
+    Vector3D& operator [](int j)
+    {
+        return (*reinterpret_cast<Vector3D *>(n[j]));
+    }
+
+    const Vector3D& operator [](int j) const
+    {
+        return (*reinterpret_cast<const Vector3D *>(n[j]));
+    }
+};
+
+#pragma endregion
